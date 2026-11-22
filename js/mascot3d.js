@@ -411,6 +411,10 @@ export function create(container, key) {
     setMode,
     setTalking(on) { st.talking = !!on; },
     look(x) { st.look = Math.max(-1, Math.min(1, x || 0)); },
+    mount(el) {
+      if (renderer.domElement.parentNode === el) return;
+      ro.disconnect(); container = el; el.appendChild(renderer.domElement); ro.observe(el); resize();
+    },
     setMascot(k) {
       scene.remove(P.root); scene.remove(P.shadow);
       P.root.traverse(o => { if (o.geometry) o.geometry.dispose(); });
