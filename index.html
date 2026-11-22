@@ -17,7 +17,7 @@
 --ink:light-dark(#10202e,#e8f1f8);--mute:light-dark(#566879,#93a9bb);--line:light-dark(#d3dee8,#2c465b);
 --blue:#1f8ef1;--red:#e5273f;--redbg:light-dark(#fde7ea,#4a1620);--green:#16a864;--greenbg:light-dark(#e2f7ec,#0f3a28);--amber:#f5a524;--acc:var(--blue)}
 :root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
-*{box-sizing:border-box;min-width:0}
+*{box-sizing:border-box;min-width:0}[hidden]{display:none!important}
 body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.5 Nunito,system-ui,sans-serif;overflow-x:clip;min-height:100vh}
 button,input,select,textarea{font:inherit;color:inherit}
 button{cursor:pointer}
@@ -141,7 +141,19 @@ const MASCOTS={
  tortuga:{name:'Tula',kind:'turtle',c:'#7fc28a',b:'#e9f3c6',d:'#3f7d4c',acc:'book',bg:'#b0532f',pitch:1.1},
  gata:{name:'Mimi',kind:'pointy',c:'#9a90b8',b:'#ece8f6',d:'#6c628f',acc:'heart',bg:'#2f5f7a',pitch:1.25},
  oso:{name:'Bruno',kind:'round',c:'#5d7891',b:'#cfdbe6',d:'#3d5468',acc:'pencil',bg:'#c27a1f',pitch:0.9},
- loro:{name:'Rocco',kind:'parrot',c:'#e23b3b',b:'#ffd84d',d:'#2a9d5c',acc:'mic',bg:'#24456b',pitch:1.3}
+ loro:{name:'Rocco',kind:'parrot',c:'#e23b3b',b:'#ffd84d',d:'#2a9d5c',acc:'mic',bg:'#24456b',pitch:1.3},
+ cuy:{name:'Coco',kind:'round',c:'#c98a4b',b:'#f3dfc4',d:'#8a5a2e',acc:'cross',bg:'#2a7d8c',pitch:1.25},
+ conejo:{name:'Toto',kind:'llama',c:'#ece7f2',b:'#ffffff',d:'#f2a7bd',acc:'tooth',bg:'#2d6fa3',pitch:1.2,teeth:1},
+ perro:{name:'Rocky',kind:'floppy',c:'#c9a36b',b:'#f3e6cc',d:'#8b6a3e',acc:'helmet',bg:'#5a6b7a',pitch:0.95},
+ mapache:{name:'Tuerca',kind:'round',c:'#8d96a0',b:'#e3e7eb',d:'#4a525c',acc:'gear',bg:'#a3462b',pitch:1.05,mask:1},
+ vicuna:{name:'Vicky',kind:'llama',c:'#c98b4f',b:'#f6e6d2',d:'#8e5a2b',acc:'coin',bg:'#1f5f4f',pitch:1.2},
+ mono:{name:'Maxi',kind:'round',c:'#7b5136',b:'#e8c9a6',d:'#4f3221',acc:'tie',bg:'#7a2f5b',pitch:1.1},
+ condor:{name:'Cóndi',kind:'bird',c:'#2e2e33',b:'#4a4a52',d:'#1c1c20',acc:'map',bg:'#3f88b5',pitch:0.9},
+ panda:{name:'Panchito',kind:'round',c:'#f4f4f4',b:'#ffffff',d:'#222222',acc:'chef',bg:'#c0392b',pitch:1.0,patches:1},
+ rana:{name:'Rita',kind:'frog',c:'#6cc04a',b:'#d9f2b4',d:'#3f8a2a',acc:'leaf',bg:'#265c7a',pitch:1.3},
+ firu:{name:'Firu',kind:'floppy',c:'#e0a96d',b:'#fff1dc',d:'#9c6b3a',acc:'steth',bg:'#2f7a5a',pitch:1.1},
+ colibri:{name:'Lila',kind:'parrot',c:'#7d5bd6',b:'#f5d0ff',d:'#2bb3a8',acc:'pencil',bg:'#d99a1f',pitch:1.35},
+ pinguino:{name:'Pepe',kind:'penguin',c:'#23272e',b:'#ffffff',d:'#23272e',acc:'book',bg:'#3a8fd1',pitch:1.15}
 };
 function mascotSVG(key){
  const m=MASCOTS[key]||MASCOTS.buho,{c,b,d}=m;let s='';
@@ -152,12 +164,19 @@ function mascotSVG(key){
  if(m.kind==='llama')s+=`<ellipse cx="70" cy="34" rx="11" ry="30" fill="${c}" transform="rotate(-12 70 34)"/><ellipse cx="130" cy="34" rx="11" ry="30" fill="${c}" transform="rotate(12 130 34)"/><ellipse cx="70" cy="36" rx="5" ry="20" fill="${d}" transform="rotate(-12 70 34)"/><ellipse cx="130" cy="36" rx="5" ry="20" fill="${d}" transform="rotate(12 130 34)"/>`;
  if(m.kind==='parrot')s+=`<path d="M100 48 q-6 -36 14 -40 q-2 20 2 30 q10 -20 26 -18 q-14 14 -18 30Z" fill="${d}"/>`;
  s+=`<ellipse cx="100" cy="190" rx="58" ry="7" fill="#0003"/>`;
- s+=`<ellipse cx="100" cy="116" rx="${m.kind==='llama'?54:64}" ry="72" fill="${c}"/><ellipse cx="100" cy="142" rx="40" ry="42" fill="${b}"/>`;
+ s+=`<ellipse cx="100" cy="116" rx="${m.kind==='llama'?54:m.kind==='frog'?72:64}" ry="${m.kind==='frog'?64:72}" fill="${c}"/><ellipse cx="100" cy="142" rx="${m.kind==='penguin'?48:40}" ry="${m.kind==='penguin'?50:42}" fill="${b}"/>`;
+ if(m.kind==='floppy')s+=`<ellipse cx="42" cy="92" rx="16" ry="36" fill="${d}" transform="rotate(18 42 92)"/><ellipse cx="158" cy="92" rx="16" ry="36" fill="${d}" transform="rotate(-18 158 92)"/>`;
+ if(m.kind==='frog')s+=`<circle cx="74" cy="66" r="31" fill="${c}"/><circle cx="126" cy="66" r="31" fill="${c}"/>`;
+ if(m.kind==='bird')s+=`<ellipse cx="100" cy="150" rx="50" ry="14" fill="#f2f2f2"/>`;
+ if(m.kind==='penguin')s+=`<ellipse cx="100" cy="92" rx="44" ry="34" fill="${b}"/>`;
+ if(m.mask)s+=`<ellipse cx="100" cy="80" rx="62" ry="20" fill="${d}"/>`;
+ if(m.patches)s+=`<ellipse cx="74" cy="82" rx="27" ry="24" fill="${d}" transform="rotate(-20 74 82)"/><ellipse cx="126" cy="82" rx="27" ry="24" fill="${d}" transform="rotate(20 126 82)"/>`;
  s+=`<path d="M38 112 q-16 40 14 66 q10 -36 -14 -66Z M162 112 q16 40 -14 66 q-10 -36 14 -66Z" fill="${d}"/>`;
  s+=`<circle cx="76" cy="80" r="23" fill="#fff"/><circle cx="124" cy="80" r="23" fill="#fff"/><circle cx="79" cy="83" r="10" fill="#1b2430"/><circle cx="121" cy="83" r="10" fill="#1b2430"/><circle cx="83" cy="78" r="3.6" fill="#fff"/><circle cx="125" cy="78" r="3.6" fill="#fff"/>`;
- s+=`<circle class="lid" cx="76" cy="80" r="24" fill="${c}"/><circle class="lid" cx="124" cy="80" r="24" fill="${c}"/>`;
+ s+=`<circle class="lid" cx="76" cy="80" r="24" fill="${m.patches||m.mask?d:m.kind==='penguin'?b:c}"/><circle class="lid" cx="124" cy="80" r="24" fill="${m.patches||m.mask?d:m.kind==='penguin'?b:c}"/>`;
  s+=`<circle cx="62" cy="108" r="7" fill="#ff7a8a" opacity=".45"/><circle cx="138" cy="108" r="7" fill="#ff7a8a" opacity=".45"/>`;
- if(m.kind==='owl'||m.kind==='parrot')s+=`<path class="mouth" d="M89 102 L111 102 L100 ${m.kind==='parrot'?126:120}Z" fill="${m.kind==='parrot'?'#2b2b2b':'#f5a524'}"/>`;
+ if(['owl','parrot','bird','penguin'].includes(m.kind))s+=`<path class="mouth" d="M89 102 L111 102 L100 ${m.kind==='parrot'||m.kind==='bird'?126:120}Z" fill="${m.kind==='parrot'?'#2b2b2b':m.kind==='bird'?'#e8c66a':'#f5a524'}"/>`;
+ else if(m.kind==='frog')s+=`<path class="mouth" d="M78 112 q22 16 44 0" stroke="#2f5d22" stroke-width="5" fill="#9b2b3a" stroke-linecap="round"/>`;
  else s+=`<ellipse cx="100" cy="103" rx="7" ry="5" fill="#3a2a2a"/><ellipse class="mouth" cx="100" cy="116" rx="9" ry="4" fill="#6b1f2a"/>${m.teeth?'<rect x="94" y="119" width="12" height="9" rx="2" fill="#fff"/>':''}`;
  const A={
   steth:`<path d="M70 168 q30 18 60 0" stroke="#2b4459" stroke-width="5" fill="none"/><circle cx="130" cy="168" r="7" fill="#c7d3de" stroke="#2b4459" stroke-width="3"/>`,
@@ -167,7 +186,14 @@ function mascotSVG(key){
   book:`<rect x="70" y="160" width="60" height="28" rx="4" fill="#2f6fd6"/><rect x="76" y="164" width="48" height="4" fill="#fff" opacity=".7"/>`,
   heart:`<path d="M100 172 l-14 -14 a8 8 0 0 1 14 -10 a8 8 0 0 1 14 10Z" fill="#ff5b7f"/>`,
   pencil:`<g transform="rotate(30 160 150)"><rect x="152" y="110" width="14" height="60" fill="#f5c518"/><path d="M152 170h14l-7 14Z" fill="#f2d2a6"/><rect x="152" y="104" width="14" height="8" fill="#ff7a8a"/></g>`,
-  mic:`<rect x="38" y="140" width="8" height="40" rx="4" fill="#555"/><circle cx="42" cy="138" r="12" fill="#333"/>`
+  mic:`<rect x="38" y="140" width="8" height="40" rx="4" fill="#555"/><circle cx="42" cy="138" r="12" fill="#333"/>`,
+  cross:`<path d="M62 50 Q100 26 138 50 L132 62 Q100 46 68 62Z" fill="#fff"/><rect x="95" y="38" width="10" height="20" fill="#e5273f"/><rect x="90" y="43" width="20" height="10" fill="#e5273f"/>`,
+  tooth:`<path d="M144 150 q8 -10 18 -4 q10 -6 18 4 q4 12 -4 22 l-4 16 q-3 6 -6 0 l-4 -12 l-4 12 q-3 6 -6 0 l-4 -16 q-8 -10 -4 -22Z" fill="#fff" stroke="#9fb3c8" stroke-width="2"/>`,
+  gear:`<g transform="translate(160 160)"><circle r="16" fill="#f5c518"/><g fill="#f5c518">${[0,45,90,135,180,225,270,315].map(a=>`<rect x="-4" y="-22" width="8" height="10" transform="rotate(${a})"/>`).join('')}</g><circle r="6" fill="#7a5a00"/></g>`,
+  coin:`<circle cx="160" cy="164" r="18" fill="#f5c518" stroke="#c99a00" stroke-width="4"/><text x="160" y="171" text-anchor="middle" font-size="20" font-weight="900" fill="#8a6a00" font-family="sans-serif">S/</text>`,
+  map:`<path d="M66 160 l22 -6 l24 6 l22 -6 v30 l-22 6 l-24 -6 l-22 6Z" fill="#f2e3b3" stroke="#b08d4a" stroke-width="2"/><path d="M88 154 v30 M112 160 v30" stroke="#b08d4a" stroke-width="2"/><circle cx="122" cy="170" r="4" fill="#e5273f"/>`,
+  chef:`<path d="M60 56 q-14 -30 14 -34 q10 -22 26 -8 q16 -14 26 8 q28 4 14 34Z" fill="#fff" stroke="#d6dbe0" stroke-width="2"/><rect x="62" y="50" width="76" height="12" rx="3" fill="#fff" stroke="#d6dbe0" stroke-width="2"/>`,
+  leaf:`<path d="M150 178 q-6 -40 34 -46 q2 40 -34 46Z" fill="#2fa84f"/><path d="M152 176 q12 -20 28 -40" stroke="#1b6e31" stroke-width="2" fill="none"/>`
  };
  s+=A[m.acc]||'';
  return `<svg viewBox="0 0 200 200" role="img" aria-label="${m.name}">${s}</svg>`;
@@ -216,6 +242,67 @@ const SEED=[
   mk('En la pirámide invertida de una noticia, ¿qué va primero?',0,['Lo más importante','El dato principal va arriba por si el lector no termina.'],['Los antecedentes','El contexto va después.'],['Los datos secundarios','Van al final.'],['La opinión del periodista','En una noticia no debería ir opinión.']),
   mk('¿Qué elemento de la comunicación es el medio por el que viaja el mensaje?',2,['El emisor','Es quien envía el mensaje.'],['El receptor','Es quien recibe el mensaje.'],['El canal','Por ahí viaja: el aire, el papel, la pantalla.'],['El código','Son los signos que se usan, como el idioma.']),
   mk('¿Cuál NO es una de las 5W del periodismo?',3,['Qué','Sí es: what.'],['Quién','Sí es: who.'],['Dónde','Sí es: where.'],['Cuánto','No es una de las 5W, que son qué, quién, cuándo, dónde y por qué.'])]}
+ ,{id:'enfermeria',name:'Enfermería',m:'cuy',qs:[
+  mk('¿Cuál es la frecuencia cardiaca normal de un adulto en reposo?',1,['40 a 50 latidos por minuto','Por debajo de 60 se habla de bradicardia, salvo en deportistas entrenados.'],['60 a 100 latidos por minuto','Es el rango normal de un adulto en reposo.'],['100 a 140 latidos por minuto','Por encima de 100 en reposo ya es taquicardia.'],['150 a 180 latidos por minuto','En un adulto en reposo sería una taquicardia marcada.']),
+  mk('¿Qué medida es la más efectiva para prevenir infecciones intrahospitalarias?',0,['El lavado de manos','Es la medida más simple y efectiva: corta la cadena de transmisión entre pacientes.'],['Dar antibióticos a todos los pacientes','Eso genera resistencia bacteriana; no se usan de forma preventiva en todos.'],['Aislar a todos los pacientes','El aislamiento se indica solo en casos específicos.'],['Usar alcohol solo al final del turno','La higiene de manos se hace en cada momento de atención, no solo al final.']),
+  mk('¿Dónde se ubica el músculo deltoides, usado para vacunas intramusculares?',0,['En la parte superior del brazo','Es el músculo del hombro, la zona más usada para vacunas en adultos.'],['En el muslo','En el muslo está el vasto lateral, otra zona intramuscular.'],['En el glúteo','Es otra zona intramuscular, no el deltoides.'],['En el abdomen','Ahí suelen aplicarse inyecciones subcutáneas, como la insulina.']),
+  mk('¿Cuál es la temperatura corporal normal aproximada de un adulto?',1,['34 °C','Eso sería hipotermia.'],['36 a 37.5 °C','Es el rango normal aproximado.'],['38.5 °C','Eso ya es fiebre.'],['35 °C','Está en el límite de la hipotermia.'])]},
+ {id:'odontologia',name:'Odontología',m:'conejo',qs:[
+  mk('¿Cuántos dientes tiene la dentición permanente completa de un adulto?',2,['20','Esa es la dentición temporal o de leche.'],['28','Son los dientes sin contar las cuatro muelas del juicio.'],['32','Con las muelas del juicio, la dentición permanente completa tiene 32.'],['36','No hay dentición humana normal con 36 dientes.']),
+  mk('¿Cuál es el tejido más duro del cuerpo humano?',0,['El esmalte dental','Es el tejido más mineralizado del cuerpo.'],['El hueso del fémur','Es muy resistente, pero menos duro que el esmalte.'],['La dentina','Está debajo del esmalte y es más blanda.'],['El cemento dental','Cubre la raíz del diente y es más blando que el esmalte.']),
+  mk('¿Qué bacteria se asocia principalmente con la caries dental?',0,['Streptococcus mutans','Fermenta azúcares y produce ácidos que desmineralizan el esmalte.'],['Escherichia coli','Vive principalmente en el intestino.'],['Helicobacter pylori','Se asocia con gastritis y úlceras del estómago.'],['Staphylococcus aureus','Se asocia con infecciones de piel, no con la caries.']),
+  mk('¿Qué elemento se añade a las pastas dentales para fortalecer el esmalte?',0,['El flúor','Ayuda a remineralizar el esmalte y a prevenir caries.'],['El hierro','Es importante contra la anemia, no para el esmalte.'],['El yodo','Es clave para la tiroides.'],['El plomo','Es tóxico. Jamás en una pasta dental.'])]},
+ {id:'civil',name:'Ingeniería Civil',m:'perro',qs:[
+  mk('¿Qué material resiste muy bien la compresión pero poco la tracción?',0,['El concreto','Por eso se combina con acero, que sí resiste la tracción.'],['El acero','Resiste muy bien la tracción; es el complemento del concreto.'],['El cable de acero','Trabaja justamente a tracción.'],['La fibra de carbono','Destaca por su resistencia a la tracción.']),
+  mk('¿Cómo se llama el concreto reforzado con varillas de acero?',1,['Concreto ciclópeo','Lleva piedras grandes, no varillas.'],['Concreto armado','El acero toma la tracción y el concreto la compresión.'],['Concreto simple','No lleva refuerzo de acero.'],['Mortero','Es una mezcla de cemento, arena y agua, sin grava.']),
+  mk('En el Perú, ¿qué norma técnica regula el diseño sismorresistente?',0,['La E.030','Es la norma de Diseño Sismorresistente del Reglamento Nacional de Edificaciones.'],['La E.060','Es la norma de concreto armado.'],['La E.050','Es la norma de suelos y cimentaciones.'],['La E.020','Es la norma de cargas.']),
+  mk('¿Qué parte de la estructura transmite las cargas al suelo?',3,['La viga','Lleva las cargas de las losas hacia las columnas.'],['La losa','Es el piso o techo que recibe las cargas.'],['La columna','Baja las cargas, pero las entrega a la cimentación.'],['La cimentación','Es la que reparte las cargas al terreno.'])]},
+ {id:'industrial',name:'Ingeniería Industrial',m:'mapache',qs:[
+  mk('¿Qué metodología usa el ciclo DMAIC para reducir la variabilidad?',0,['Six Sigma','DMAIC: definir, medir, analizar, mejorar y controlar.'],['Kanban','Es un sistema visual para controlar el flujo de trabajo.'],['5S','Se enfoca en orden y limpieza del lugar de trabajo.'],['Just in Time','Busca producir lo necesario en el momento necesario.']),
+  mk('¿Qué significan las 5S?',0,['Clasificar, ordenar, limpiar, estandarizar y disciplina','Vienen de cinco palabras japonesas que empiezan con S.'],['Seguridad, salud, servicio, sistema y solución','Suena bien, pero no son las 5S.'],['Planear, hacer, verificar y actuar','Ese es el ciclo PDCA o de Deming.'],['Definir, medir, analizar, mejorar y controlar','Ese es el DMAIC de Six Sigma.']),
+  mk('¿Con qué otro nombre se conoce al diagrama de Ishikawa?',1,['Diagrama de Pareto','Ordena causas por frecuencia con la regla 80/20.'],['Diagrama de causa y efecto','También se le dice espina de pescado.'],['Diagrama de Gantt','Es un cronograma de actividades.'],['Diagrama de flujo','Muestra los pasos de un proceso.']),
+  mk('¿Qué plantea el principio de Pareto?',0,['El 80% de los efectos viene del 20% de las causas','Sirve para enfocarse en las pocas causas que más pesan.'],['Todas las causas pesan igual','Justo lo contrario: unas pocas pesan mucho.'],['El 50% de los efectos viene del 50% de las causas','No es la proporción del principio.'],['El 20% de los efectos viene del 80% de las causas','Está al revés.'])]},
+ {id:'economia',name:'Economía',m:'vicuna',qs:[
+  mk('¿Qué es la inflación?',0,['El aumento generalizado y sostenido de los precios','No basta con que suba un producto: suben los precios en general.'],['La subida de precio de un solo producto','Eso es un cambio de precio relativo, no inflación.'],['La caída general de los precios','Eso es deflación.'],['El crecimiento del PBI','Eso es crecimiento económico.']),
+  mk('¿Qué institución maneja la política monetaria en el Perú?',0,['El Banco Central de Reserva del Perú','El BCRP fija la tasa de referencia y busca la estabilidad de precios.'],['El Ministerio de Economía y Finanzas','Maneja la política fiscal: gasto e impuestos.'],['La SBS','Supervisa a bancos, seguros y AFP.'],['La SUNAT','Administra los tributos.']),
+  mk('Según la ley de la demanda, si sube el precio de un bien, ¿qué pasa con la cantidad demandada?',1,['Sube','Solo pasaría en casos raros, como los bienes Giffen.'],['Baja','A mayor precio, menor cantidad demandada, si lo demás no cambia.'],['Se mantiene igual','Solo pasaría con una demanda perfectamente inelástica.'],['Se duplica','No hay ninguna regla así.']),
+  mk('¿Qué mide el PBI?',0,['El valor de los bienes y servicios finales producidos en un país en un periodo','Es la medida principal del tamaño de una economía.'],['El dinero guardado en el banco central','Eso son las reservas internacionales.'],['Solo las exportaciones','Las exportaciones son una parte del PBI.'],['Los ingresos del Estado','Eso es la recaudación.'])]},
+ {id:'administracion',name:'Administración y Marketing',m:'mono',qs:[
+  mk('¿Cuáles son las 4P del marketing?',0,['Producto, precio, plaza y promoción','Es la mezcla de marketing clásica.'],['Planear, producir, publicar y pagar','Suena lógico, pero no son las 4P.'],['Personas, procesos, planta y precio','Mezcla elementos de la versión ampliada de servicios.'],['Planear, hacer, verificar y actuar','Ese es el ciclo PDCA.']),
+  mk('¿Quién es considerado el padre de la administración moderna?',0,['Peter Drucker','Planteó la administración por objetivos y la gestión moderna.'],['Frederick Taylor','Es el padre de la administración científica.'],['Henri Fayol','Planteó el proceso administrativo y la teoría clásica.'],['Philip Kotler','Es una gran referencia del marketing.']),
+  mk('¿Cuáles son las etapas del proceso administrativo más usadas hoy?',1,['Producción, ventas y finanzas','Son áreas de una empresa, no etapas del proceso.'],['Planificación, organización, dirección y control','Son las cuatro etapas clásicas.'],['Análisis, diseño, desarrollo y pruebas','Es el ciclo de desarrollo de software.'],['Misión, visión, valores y objetivos','Son parte de la planificación estratégica.']),
+  mk('En marketing, ¿qué es un buyer persona?',0,['Una representación semificticia del cliente ideal','Se construye con datos reales para entender a quién le hablas.'],['El vendedor estrella de la empresa','No: es el cliente, no el vendedor.'],['Un comprador mayorista','No tiene que ver con el volumen de compra.'],['Una persona jurídica que compra','No se refiere al tipo legal del cliente.'])]},
+ {id:'turismo',name:'Turismo y Hotelería',m:'condor',qs:[
+  mk('En un hotel, ¿qué es el check-in?',0,['El registro de llegada del huésped','Ahí se confirma la reserva y se entrega la habitación.'],['La salida del huésped','Eso es el check-out.'],['La reserva anticipada','Se hace antes, no al llegar.'],['La limpieza de la habitación','Eso es parte del housekeeping.']),
+  mk('¿En qué región del Perú está Machu Picchu?',0,['Cusco','Está en la provincia de Urubamba, en Cusco.'],['Puno','Allí está el lago Titicaca.'],['Arequipa','Allí está el cañón del Colca.'],['Ica','Allí están las líneas de Nasca.']),
+  mk('¿Qué hace un operador turístico?',0,['Diseña y organiza paquetes y servicios turísticos','Arma la experiencia: transporte, guías, visitas.'],['Solo vende pasajes de avión','Eso lo hace una aerolínea o una agencia.'],['Solo guía a los turistas en el lugar','Eso es el guía de turismo.'],['Supervisa los hoteles del país','Eso corresponde al Estado.']),
+  mk('¿Qué es una habitación doble twin?',1,['Una habitación con una cama de dos plazas','Esa es la doble matrimonial.'],['Una habitación con dos camas separadas','Twin significa camas gemelas.'],['Una suite de lujo','La suite tiene ambientes separados.'],['Una habitación para una persona','Esa es la simple.'])]},
+ {id:'gastronomia',name:'Gastronomía',m:'panda',qs:[
+  mk('¿Qué es el mise en place?',0,['Tener todo preparado y ordenado antes de cocinar','Ingredientes cortados, medidos y listos: la base de una cocina ordenada.'],['Un tipo de postre francés','Suena francés, pero no es un postre.'],['Una técnica de flambeado','El flambeado es prender alcohol en la preparación.'],['La forma de servir en el plato','Eso es el emplatado.']),
+  mk('¿A qué temperatura hierve el agua al nivel del mar?',1,['90 °C','En ciudades altas como Cusco hierve a menos de 100, pero no a nivel del mar.'],['100 °C','A nivel del mar, el agua hierve a 100 °C.'],['120 °C','Se acerca a lo que logra una olla a presión.'],['80 °C','Es demasiado baja para el punto de ebullición.']),
+  mk('En el ceviche, ¿qué ingrediente cocina el pescado?',0,['El jugo de limón','Su acidez cambia las proteínas del pescado, como si se cocinara.'],['La sal','Sazona, pero no cocina.'],['El ají','Da sabor y picor.'],['La cebolla','Da textura y sabor.']),
+  mk('¿Cómo se llama la técnica de cocinar al vacío a baja temperatura controlada?',0,['Sous vide','En francés significa al vacío.'],['Salteado','Es cocinar rápido a fuego alto con poca grasa.'],['Braseado','Es cocinar lento con líquido, tras dorar.'],['Blanqueado','Es una cocción breve en agua hirviendo y luego enfriar.'])]},
+ {id:'biologia',name:'Biología y Ciencias Ambientales',m:'rana',qs:[
+  mk('¿Qué organelo produce la mayor parte del ATP de la célula?',0,['La mitocondria','Es la central de energía de la célula.'],['El ribosoma','Fabrica proteínas.'],['El núcleo','Guarda el ADN.'],['El aparato de Golgi','Modifica y empaqueta proteínas.']),
+  mk('¿Qué base nitrogenada NO está en el ADN?',0,['El uracilo','Está en el ARN; en el ADN se usa la timina.'],['La adenina','Sí está en el ADN.'],['La timina','Sí está en el ADN.'],['La guanina','Sí está en el ADN.']),
+  mk('¿Qué proceso usan las plantas para producir glucosa con la luz del sol?',0,['La fotosíntesis','Usa luz, agua y dióxido de carbono, y libera oxígeno.'],['La respiración celular','Hace lo contrario: usa glucosa para obtener energía.'],['La fermentación','Obtiene energía sin oxígeno.'],['La transpiración','Es la pérdida de agua por las hojas.']),
+  mk('¿Quién propuso la evolución por selección natural?',0,['Charles Darwin','La planteó en El origen de las especies, a la par con Wallace.'],['Gregor Mendel','Es el padre de la genética.'],['Jean-Baptiste Lamarck','Propuso la herencia de caracteres adquiridos.'],['Louis Pasteur','Refutó la generación espontánea.'])]},
+ {id:'veterinaria',name:'Medicina Veterinaria',m:'firu',qs:[
+  mk('¿Cuántos compartimentos tiene el estómago de una vaca?',3,['1','Eso es en animales monogástricos, como el perro.'],['2','No hay rumiantes con dos.'],['3','Así es el de los camélidos, como la alpaca.'],['4','Rumen, retículo, omaso y abomaso.']),
+  mk('¿Qué enfermedad, transmisible a humanos, se previene con la vacunación de perros y gatos en las campañas del Estado?',0,['La rabia','Es mortal y se transmite por mordedura; por eso se vacuna masivamente.'],['El moquillo','Afecta a perros, no se transmite a humanos.'],['El parvovirus canino','Afecta a perros, no a humanos.'],['La toxoplasmosis','Es causada por un parásito y no se previene con esas campañas.']),
+  mk('¿Cuál es la temperatura normal aproximada de un perro?',0,['38 a 39.2 °C','Es más alta que la nuestra.'],['36 a 37 °C','Esa es la temperatura humana.'],['40 a 41 °C','Eso ya es fiebre en un perro.'],['35 °C','Sería hipotermia.']),
+  mk('¿Qué alimento es tóxico para los perros?',0,['El chocolate','Contiene teobromina, que los perros no metabolizan bien.'],['El arroz cocido','Suele ser seguro en cantidades moderadas.'],['La zanahoria','Es segura y hasta se usa como premio.'],['El pollo cocido sin huesos','Es seguro; el problema son los huesos cocidos.'])]},
+ {id:'diseno',name:'Diseño Gráfico',m:'colibri',qs:[
+  mk('¿Qué modo de color se usa para imprimir?',0,['CMYK','Cian, magenta, amarillo y negro: las tintas de impresión.'],['RGB','Es para pantallas: rojo, verde y azul de luz.'],['HEX','Es una forma de escribir colores RGB para la web.'],['HSL','Es otra forma de describir colores en pantalla.']),
+  mk('¿Qué tipo de imagen no pierde calidad al ampliarse?',0,['La vectorial','Está hecha de fórmulas matemáticas, no de píxeles.'],['El JPG','Es un mapa de bits: se pixela al ampliar.'],['El PNG','También es un mapa de bits.'],['El GIF','Es de píxeles y además con pocos colores.']),
+  mk('¿Qué resolución se recomienda para imprimir con buena calidad?',1,['72 ppp','Es la referencia tradicional para pantalla.'],['300 ppp','Es el estándar para impresión de calidad.'],['30 ppp','Se vería totalmente pixelado.'],['10 ppp','Ni para un boceto.']),
+  mk('¿Qué son los colores complementarios?',0,['Los que están opuestos en el círculo cromático','Como azul y naranja: generan mucho contraste.'],['Los que están juntos en el círculo','Esos son los análogos.'],['Un mismo color con distinta luminosidad','Esa es una paleta monocromática.'],['El rojo, el amarillo y el azul','Esos son los primarios tradicionales.'])]},
+ {id:'idiomas',name:'Idiomas y Traducción',m:'pinguino',qs:[
+  mk('¿Qué es un falso amigo?',0,['Una palabra parecida en dos idiomas pero con distinto significado','Como embarrassed, que no significa embarazada sino avergonzado.'],['Un sinónimo','Los sinónimos son del mismo idioma.'],['Un préstamo aceptado de otro idioma','Eso es un extranjerismo o préstamo.'],['Un error del traductor automático','No es eso, aunque los traductores caen en ellos.']),
+  mk('¿Cuál es la diferencia entre un traductor y un intérprete?',0,['El traductor trabaja con textos escritos y el intérprete con lo oral','Ambos pasan de un idioma a otro, pero en distinto medio.'],['El traductor trabaja con lo oral y el intérprete con textos','Es al revés.'],['No hay ninguna diferencia','Sí la hay: escrito frente a oral.'],['El intérprete solo trabaja en teatro','No tiene que ver con actuar.']),
+  mk('En inglés, ¿cuál es el pasado simple de "go"?',1,['Goed','Es irregular: no lleva -ed.'],['Went','Go, went, gone.'],['Gone','Es el participio pasado.'],['Going','Es el gerundio.']),
+  mk('¿Cuál es la lengua originaria más hablada en el Perú?',0,['El quechua','Es la lengua originaria con más hablantes del país.'],['El aimara','Es la segunda, sobre todo en Puno.'],['El asháninka','Es de las más habladas en la Amazonía.'],['El shipibo-konibo','Se habla en la Amazonía, sobre todo en Ucayali.'])]}
+
 ];
 const LINES={
  bad:['Uy, no del todo. Siéntate que te explico.','Mmm, casi. Pero no. Escuchen bien.','Ay, no. Esto entra en el examen, ¿eh?','Uf, no. Pero tranquilos, para eso estoy.','Respuesta valiente, pero incorrecta.'],
@@ -228,6 +315,11 @@ const clone=x=>JSON.parse(JSON.stringify(x));
 let mods,prefs;
 try{mods=JSON.parse(localStorage.getItem(KEY))}catch(e){}
 if(!Array.isArray(mods))mods=clone(SEED);
+{let known=null;try{known=JSON.parse(localStorage.getItem('repasa.seeds'))}catch(e){}
+ if(!Array.isArray(known))known=['salud','sistemas','derecho','negocios','educacion','psicologia','arquitectura','comunicaciones'];
+ const have=new Set(mods.map(m=>m.id));
+ SEED.forEach(sd=>{if(!known.includes(sd.id)&&!have.has(sd.id))mods.push(clone(sd))});
+ try{localStorage.setItem('repasa.seeds',JSON.stringify(SEED.map(x=>x.id)));localStorage.setItem('repasa.v1',JSON.stringify(mods))}catch(e){}}
 try{prefs=JSON.parse(localStorage.getItem(SKEY))}catch(e){}
 prefs=Object.assign({voice:'',rate:1,muted:false},prefs||{});
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(mods))}catch(e){}};
@@ -290,13 +382,16 @@ function home(){
  $('imp').onclick=()=>$('file').click();
  app.innerHTML=`<main class="wrap"><h1>Repasa en clase</h1>
  <p class="sub">Proyecta la pregunta, los alumnos responden en voz alta y tú haces clic en la respuesta. La mascota de cada carrera explica por qué va cada opción.</p>
- <div class="grid">${mods.map(m=>{const ms=MASCOTS[m.m]||MASCOTS.buho;return `<article class="mod" style="--c:${ms.bg}">
+ <input type="text" id="buscar" placeholder="Buscar carrera o módulo…" aria-label="Buscar carrera" style="max-width:420px;margin-bottom:16px">
+ <div class="grid">${mods.map(m=>{const ms=MASCOTS[m.m]||MASCOTS.buho;return `<article class="mod" style="--c:${ms.bg}" data-n="${esc((m.name+' '+ms.name).toLowerCase())}">
   <div class="art">${mascotSVG(m.m)}</div><div class="bd"><h3>${esc(m.name)}</h3><small>Con ${ms.name} · ${m.qs.length} pregunta${m.qs.length===1?'':'s'}</small>
   <div class="row"><button class="btn main" data-play="${m.id}" ${m.qs.length?'':'disabled'}>Jugar</button><button class="btn" data-mod="${m.id}">Editar</button></div></div></article>`}).join('')}
   <button class="new" id="nuevo">+ Nuevo módulo</button></div>
   <p class="hint">Las preguntas se guardan en este navegador. Exporta un módulo para pasárselo a otro profesor.</p></main>`;
  app.querySelectorAll('[data-play]').forEach(b=>b.onclick=()=>go({name:'setup',id:b.dataset.play}));
  app.querySelectorAll('[data-mod]').forEach(b=>b.onclick=()=>go({name:'module',id:b.dataset.mod}));
+ const norm=t=>t.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+ $('buscar').oninput=e=>{const t=norm(e.target.value.trim());app.querySelectorAll('.mod').forEach(a=>a.hidden=t&&!norm(a.dataset.n).includes(t))};
  $('nuevo').onclick=()=>{const m={id:'m'+Date.now().toString(36),name:'Nuevo módulo',m:'buho',qs:[]};mods.push(m);save();go({name:'module',id:m.id})};
 }
 
@@ -545,7 +640,7 @@ function vozView(){
   <label for="rt">Velocidad: <span id="rv">${prefs.rate.toFixed(1)}</span></label><input type="range" id="rt" min="0.7" max="1.4" step="0.1" value="${prefs.rate}" style="width:100%">
   <div class="pnav"><button class="btn main" id="test">Probar voz</button></div>
   <p class="tip">Las voces marcadas con ★ suenan mucho más naturales. En Microsoft Edge aparecen voces como Camila (Perú), Dalia (México) o Jorge. En Chrome, las de Google son las mejores disponibles.</p>`}
-  </div><div class="panel"><h2 style="margin-top:0">Preguntas de ejemplo</h2><p class="hint">Vuelve a cargar las preguntas de ejemplo de las 8 áreas. Tus módulos nuevos se mantienen.</p>
+  </div><div class="panel"><h2 style="margin-top:0">Preguntas de ejemplo</h2><p class="hint">Vuelve a cargar las preguntas de ejemplo de todas las carreras. Tus módulos nuevos se mantienen.</p>
   <button class="btn danger" id="reset">Restaurar ejemplos</button></div></main>`;
  if(synth){
   $('vs').onchange=e=>{prefs.voice=e.target.value;savePrefs()};
