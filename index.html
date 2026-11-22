@@ -62,6 +62,16 @@ textarea{min-height:64px;resize:vertical}
 .seg button{min-height:44px;padding:0 16px;border-radius:12px;border:2px solid var(--line);background:var(--card2);font-weight:800}
 .seg button[aria-pressed=true]{background:var(--acc);border-color:var(--acc);color:#fff}
 .hint{font-size:14px;color:var(--mute);margin-top:8px}
+.ai{border:2px dashed var(--acc);border-radius:18px;padding:4px 16px 14px;margin:14px 0;background:var(--card2)}
+.ai summary{font-weight:900;font-size:18px;cursor:pointer;min-height:48px;display:flex;align-items:center}
+.ai ol{margin:6px 0 0;padding-left:22px;display:grid;gap:14px}
+.ai li{padding-left:4px}.ai li>b{display:block;margin-bottom:6px}
+.links{display:flex;gap:8px;flex-wrap:wrap}
+.links a{min-height:44px;padding:0 16px;border-radius:12px;border:2px solid var(--line);background:var(--card);font-weight:800;display:inline-flex;align-items:center;color:inherit;text-decoration:none}
+.mok{color:var(--green);font-weight:800}.mbad{color:var(--red);font-weight:800}
+.prev{display:grid;gap:8px;margin-top:12px}
+.prev label{display:grid;grid-template-columns:26px minmax(0,1fr);gap:10px;align-items:start;margin:0;padding:12px;border-radius:14px;background:var(--card);font-weight:700}
+.prev input{width:22px;height:22px;margin-top:2px}.prev small{display:block;color:var(--mute)}
 .tip{background:light-dark(#fff6e0,#3a2c0c);border-radius:14px;padding:10px 14px;font-size:15px;margin-top:14px}
 /* modo clase */
 .play{display:grid;grid-template-columns:minmax(0,1fr) minmax(280px,30%);gap:18px;padding:18px max(2vw,12px);min-height:calc(100vh - 70px)}
@@ -273,7 +283,7 @@ function header(extra=''){
  $('home').onclick=()=>go({name:'home'});$('vozBtn').onclick=()=>go({name:'voz',back:view});
 }
 function render(){document.documentElement.style.setProperty('--acc','#1f8ef1');
- ({home,module:modView,edit:editView,setup,play:playView,result,voz:vozView})[view.name]();}
+ ({home,module:modView,edit:editView,gen:genView,setup,play:playView,result,voz:vozView})[view.name]();}
 
 function home(){
  header(`<button class="btn" id="imp">Importar módulo</button>`);
@@ -297,13 +307,13 @@ function modView(){
   <label for="mn">Nombre del módulo o carrera</label><input type="text" id="mn" value="${esc(m.name)}">
   <label>Mascota tutora</label><div class="pick">${Object.keys(MASCOTS).map(k=>`<button style="--c:${MASCOTS[k].bg}" data-k="${k}" aria-pressed="${m.m===k}" title="${MASCOTS[k].name}">${mascotSVG(k)}</button>`).join('')}</div>
   <p class="hint">${MASCOTS[m.m].name} será quien explique en este módulo.</p></div>
-  <div class="panel"><div class="pnav" style="margin:0"><h2 style="margin:0">Preguntas (${m.qs.length})</h2><button class="btn main" id="addq">+ Agregar pregunta</button></div>
+  <div class="panel"><div class="pnav" style="margin:0"><h2 style="margin:0">Preguntas (${m.qs.length})</h2><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" id="genq">Crear varias con IA</button><button class="btn main" id="addq">+ Agregar pregunta</button></div></div>
   <div class="qlist">${m.qs.map((q,i)=>`<div class="qi"><span>${i+1}. ${esc(q.q)}</span><button class="btn" data-e="${i}">Editar</button><button class="btn danger" data-d="${i}">Borrar</button></div>`).join('')||'<p class="hint">Aún no hay preguntas. Agrega la primera.</p>'}</div></div>
   <div class="pnav"><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn main" id="jugar" ${m.qs.length?'':'disabled'}>Jugar en clase</button><button class="btn" id="exp">Exportar módulo</button></div><button class="btn danger" id="delm">Borrar módulo</button></div>
   <p class="hint" id="msg"></p></main>`;
  $('mn').oninput=e=>{m.name=e.target.value||'Sin nombre';save()};
  app.querySelectorAll('.pick button').forEach(b=>b.onclick=()=>{m.m=b.dataset.k;save();render()});
- $('addq').onclick=()=>go({name:'edit',id:m.id,qi:-1});
+ $('addq').onclick=()=>go({name:'edit',id:m.id,qi:-1});$('genq').onclick=()=>go({name:'gen',id:m.id});
  app.querySelectorAll('[data-e]').forEach(b=>b.onclick=()=>go({name:'edit',id:m.id,qi:+b.dataset.e}));
  app.querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>{if(b.dataset.sure){m.qs.splice(+b.dataset.d,1);save();render()}else{b.dataset.sure=1;b.textContent='¿Seguro?'}});
  $('jugar').onclick=()=>go({name:'setup',id:m.id});
@@ -323,6 +333,56 @@ $('file').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)r
   mods.push(m);save();go({name:'module',id:m.id});
  }catch(err){const s=document.querySelector('.sub');if(s)s.textContent='Ese archivo no es un módulo de Repasa válido.'}};
 
+/* ---------- IA gratis: copiar y pegar ---------- */
+const FORMATO='{"preguntas":[{"pregunta":"...","opciones":[{"texto":"...","correcta":true,"explicacion":"..."},{"texto":"...","correcta":false,"explicacion":"..."},{"texto":"...","correcta":false,"explicacion":"..."},{"texto":"...","correcta":false,"explicacion":"..."}]}]}';
+const REGLAS=`- Las opciones incorrectas deben ser creíbles: errores típicos de los alumnos. No uses "todas las anteriores" ni "ninguna de las anteriores".
+- Explica cada una de las 4 opciones en 1 o 2 oraciones: por qué es la correcta o por qué no lo es. En las incorrectas puedes usar un toque de humor amable, como un profe que bromea con cariño.
+- Escribe en español latino, claro y con datos correctos.`;
+function promptUna(m,preg,resp){const ms=MASCOTS[m.m];return `Eres ${ms.name}, un tutor simpático del curso "${m.name}" que explica las respuestas en clase a estudiantes universitarios.
+
+Te doy una pregunta de opción múltiple y su respuesta correcta. Crea 3 opciones incorrectas y explica las 4 opciones.
+${REGLAS}
+- Si notas que la respuesta correcta que te doy tiene un error, avísalo dentro de su explicación.
+
+Pregunta: ${preg}
+Respuesta correcta: ${resp}
+
+Responde SOLO con un JSON válido, sin texto antes ni después, con este formato exacto:
+${FORMATO}`}
+function promptVarias(m,tema,n,nivel){const ms=MASCOTS[m.m];return `Eres ${ms.name}, un tutor simpático del curso "${m.name}" que explica las respuestas en clase a estudiantes universitarios.
+
+Crea ${n} preguntas de opción múltiple sobre este tema: ${tema}
+Nivel de dificultad: ${nivel}.
+- Cada pregunta tiene 4 opciones y solo una es correcta. No repitas preguntas.
+${REGLAS}
+
+Responde SOLO con un JSON válido, sin texto antes ni después, con este formato exacto (la lista "preguntas" debe tener ${n} elementos):
+${FORMATO}`}
+function parseIA(txt){
+ let t=String(txt||'').replace(/```(?:json)?/gi,'').trim();
+ const a=t.search(/[\[{]/),b=Math.max(t.lastIndexOf('}'),t.lastIndexOf(']'));
+ if(a<0||b<a)throw new Error('No encontré el JSON en lo que pegaste.');
+ let j;try{j=JSON.parse(t.slice(a,b+1))}catch(e){throw new Error('El texto no es un JSON válido. Copia la respuesta completa de la IA.')}
+ const list=Array.isArray(j)?j:(j.preguntas||[j]);
+ const out=list.map(x=>{
+  const q=String(x.pregunta||x.q||'').trim(),ops=x.opciones||x.options||[];
+  if(!q||ops.length!==4)return null;
+  const o=ops.map(op=>[String(op.texto||op.text||'').trim(),String(op.explicacion||op.explicación||op.explanation||'').trim(),op.correcta===true||op.correcta==='true'||op.correct===true]);
+  if(o.some(z=>!z[0])||o.filter(z=>z[2]).length!==1)return null;
+  for(let i=3;i>0;i--){const r=Math.floor(Math.random()*(i+1));[o[i],o[r]]=[o[r],o[i]]}
+  return {q,ok:o.findIndex(z=>z[2]),o:o.map(z=>[z[0],z[1]||(z[2]?'Esta es la respuesta correcta.':'Esta no es la respuesta correcta.')])};
+ }).filter(Boolean);
+ if(!out.length)throw new Error('No encontré preguntas completas: cada una necesita 4 opciones y una sola correcta.');
+ return out;
+}
+async function copyText(text,box){
+ try{await navigator.clipboard.writeText(text);return true}catch(e){}
+ box.hidden=false;box.value=text;box.focus();box.select();
+ try{if(document.execCommand('copy'))return true}catch(e){}
+ return false;
+}
+const iaLinks=`<div class="links"><a href="https://chatgpt.com/" target="_blank" rel="noopener">ChatGPT</a><a href="https://gemini.google.com/" target="_blank" rel="noopener">Gemini</a><a href="https://claude.ai/new" target="_blank" rel="noopener">Claude</a></div>`;
+
 function editView(){
  const m=modBy(view.id);if(!m)return go({name:'home'});
  const q=view.qi>=0?clone(m.qs[view.qi]):{q:'',ok:0,o:[['',''],['',''],['',''],['','']]};
@@ -330,13 +390,31 @@ function editView(){
  app.innerHTML=`<main class="wrap" style="max-width:860px"><div class="panel">
   <h2 style="margin-top:0">${view.qi>=0?'Editar':'Nueva'} pregunta</h2>
   <label for="qq">Pregunta</label><textarea id="qq" placeholder="Ej.: ¿Qué órgano produce la bilis?">${esc(q.q)}</textarea>
-  <p class="hint">Escribe las 4 opciones y marca la correcta. En cada una explica por qué va o por qué no: eso es lo que dirá ${MASCOTS[m.m].name}.</p>
+  <details class="ai" ${view.qi>=0?'':'open'}><summary>Completar con IA gratis</summary>
+   <ol><li><b>Escribe la respuesta correcta</b><input type="text" id="aic" placeholder="Ej.: El hígado" value="${view.qi>=0?esc(q.o[q.ok][0]):''}"></li>
+   <li><b>Copia la instrucción y pégala en una IA gratis</b><div class="links"><button class="btn main" id="aicopy">Copiar instrucción</button></div>
+    <textarea id="aibox" hidden readonly style="margin-top:8px;min-height:120px;font-size:13px"></textarea><p class="hint" id="aicm"></p>${iaLinks}</li>
+   <li><b>Pega aquí lo que respondió la IA</b><textarea id="aip" placeholder="Pega la respuesta completa de la IA"></textarea>
+    <div class="links" style="margin-top:8px"><button class="btn main" id="aifill">Rellenar opciones</button></div><p class="hint" id="aim"></p></li></ol></details>
+  <p class="hint">O escribe tú las 4 opciones y marca la correcta. En cada una explica por qué va o por qué no: eso es lo que dirá ${MASCOTS[m.m].name}.</p>
   ${q.o.map((o,k)=>`<div class="optEd ${q.ok===k?'isok':''}" data-k="${k}"><div class="lt">${L[k]}<input type="radio" name="ok" value="${k}" ${q.ok===k?'checked':''} aria-label="Opción ${L[k]} es la correcta"></div>
    <div><input type="text" class="ot_" placeholder="Opción ${L[k]}" value="${esc(o[0])}"><textarea class="ow_" placeholder="${q.ok===k?'Por qué es correcta':'Por qué no es correcta'}">${esc(o[1])}</textarea></div></div>`).join('')}
   <p class="hint">Marca con el círculo la respuesta correcta.</p>
   <div class="pnav"><button class="btn" id="cancel">Cancelar</button><button class="btn main" id="saveq">Guardar pregunta</button></div><p class="hint" id="err" style="color:var(--red)"></p></div></main>`;
  app.querySelectorAll('input[name=ok]').forEach(r=>r.onchange=()=>app.querySelectorAll('.optEd').forEach(d=>d.classList.toggle('isok',d.dataset.k===r.value)));
  $('cancel').onclick=()=>go({name:'module',id:m.id});
+ $('aicopy').onclick=async()=>{const pq=$('qq').value.trim(),pc=$('aic').value.trim(),msg=$('aicm');
+  if(!pq||!pc){msg.className='hint mbad';msg.textContent='Primero escribe la pregunta y la respuesta correcta.';return}
+  const ok=await copyText(promptUna(m,pq,pc),$('aibox'));
+  msg.className=ok?'hint mok':'hint';msg.textContent=ok?'Copiada. Ábrela en una IA, pega con Ctrl+V y envía.':'Copia el texto de arriba (ya está seleccionado) y pégalo en una IA.'};
+ $('aifill').onclick=()=>{const msg=$('aim');
+  try{const r=parseIA($('aip').value)[0];
+   if(!$('qq').value.trim())$('qq').value=r.q;
+   app.querySelectorAll('.optEd').forEach((d,k)=>{d.querySelector('.ot_').value=r.o[k][0];d.querySelector('.ow_').value=r.o[k][1];d.classList.toggle('isok',k===r.ok)});
+   app.querySelector(`input[name=ok][value="${r.ok}"]`).checked=true;
+   msg.className='hint mok';msg.textContent='Listo. Revisa las opciones y guarda la pregunta.';
+   app.querySelector('.optEd').scrollIntoView({behavior:'smooth',block:'center'});
+  }catch(e){msg.className='hint mbad';msg.textContent=e.message}};
  $('saveq').onclick=()=>{
   const nq={q:$('qq').value.trim(),ok:+app.querySelector('input[name=ok]:checked').value,o:[...app.querySelectorAll('.optEd')].map(d=>[d.querySelector('.ot_').value.trim(),d.querySelector('.ow_').value.trim()])};
   if(!nq.q)return $('err').textContent='Falta escribir la pregunta.';
@@ -344,6 +422,36 @@ function editView(){
   nq.o.forEach((o,k)=>{if(!o[1])o[1]=k===nq.ok?'Esta es la respuesta correcta.':'Esta no es la respuesta correcta.'});
   if(view.qi>=0)m.qs[view.qi]=nq;else m.qs.push(nq);save();go({name:'module',id:m.id});
  };
+}
+
+let genList=[];
+function genView(){
+ const m=modBy(view.id);if(!m)return go({name:'home'});genList=[];
+ header(`<button class="btn" id="back">← ${esc(m.name)}</button>`);$('back').onclick=()=>go({name:'module',id:m.id});
+ app.innerHTML=`<main class="wrap" style="max-width:860px"><div class="panel">
+  <h1>Crear varias preguntas con IA</h1><p class="sub">Gratis: Repasa prepara la instrucción, tú la pegas en una IA y luego pegas aquí su respuesta. ${MASCOTS[m.m].name} usará las explicaciones en clase.</p>
+  <div class="ai" style="border-style:solid"><ol>
+   <li><b>¿Sobre qué tema?</b><textarea id="gt" placeholder="Ej.: sistema digestivo: órganos, enzimas y funciones"></textarea>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px"><div><label for="gn" style="margin-top:0">Cantidad</label><select id="gn">${[5,10,15,20].map(n=>`<option ${n===10?'selected':''}>${n}</option>`).join('')}</select></div>
+    <div><label for="gl" style="margin-top:0">Dificultad</label><select id="gl"><option>básica</option><option selected>intermedia</option><option>avanzada</option></select></div></div></li>
+   <li><b>Copia la instrucción y pégala en una IA gratis</b><div class="links"><button class="btn main" id="gcopy">Copiar instrucción</button></div>
+    <textarea id="gbox" hidden readonly style="margin-top:8px;min-height:120px;font-size:13px"></textarea><p class="hint" id="gcm"></p>${iaLinks}</li>
+   <li><b>Pega aquí lo que respondió la IA</b><textarea id="gp" style="min-height:120px" placeholder="Pega la respuesta completa de la IA"></textarea>
+    <div class="links" style="margin-top:8px"><button class="btn main" id="gread">Revisar preguntas</button></div><p class="hint" id="gm"></p></li></ol></div>
+  <div id="gprev"></div></div></main>`;
+ $('gcopy').onclick=async()=>{const t=$('gt').value.trim(),msg=$('gcm');
+  if(!t){msg.className='hint mbad';msg.textContent='Primero escribe el tema.';return}
+  const ok=await copyText(promptVarias(m,t,$('gn').value,$('gl').value),$('gbox'));
+  msg.className=ok?'hint mok':'hint';msg.textContent=ok?'Copiada. Ábrela en una IA, pega con Ctrl+V y envía.':'Copia el texto de arriba (ya está seleccionado) y pégalo en una IA.'};
+ $('gread').onclick=()=>{const msg=$('gm');
+  try{genList=parseIA($('gp').value);msg.className='hint mok';msg.textContent='Encontré '+genList.length+' pregunta'+(genList.length===1?'':'s')+'. Desmarca las que no quieras.';
+   $('gprev').innerHTML=`<div class="prev">${genList.map((g,i)=>`<label><input type="checkbox" data-g="${i}" checked><span>${esc(g.q)}<small>Correcta: ${L[g.ok]}) ${esc(g.o[g.ok][0])}</small></span></label>`).join('')}</div>
+    <div class="pnav"><span class="keys">Luego podrás editar cada una en el módulo.</span><button class="btn main" id="gadd">Agregar al módulo</button></div>`;
+   $('gadd').onclick=()=>{const pick=[...app.querySelectorAll('[data-g]')].filter(c=>c.checked).map(c=>genList[+c.dataset.g]);
+    if(!pick.length){msg.className='hint mbad';msg.textContent='Marca al menos una pregunta.';return}
+    m.qs.push(...pick);save();go({name:'module',id:m.id})};
+   $('gprev').scrollIntoView({behavior:'smooth'});
+  }catch(e){msg.className='hint mbad';msg.textContent=e.message;$('gprev').innerHTML=''}};
 }
 
 let setupOpt={teams:2,time:0,shuffle:true};
