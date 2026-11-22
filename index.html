@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Repasa · Modo clase</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<style>
+/* VOICE: aula animada; el profe proyecta, la mascota explica con cariño y un poco de burla
+   IDEA: pantalla de concurso de clase, con tutor en videollamada al costado
+   PICTURE: mascotas propias por carrera (SVG), grandes en el modo clase
+   COLOUR and TYPE: pizarra azul profundo, rojo error, verde acierto, cada área con su color; Nunito
+   LAYOUT: inicio = grilla de áreas; clase = pregunta y 4 opciones a la izquierda, mascota a la derecha */
+:root{color-scheme:light dark;
+--bg:light-dark(#e7eef5,#0f1c28);--card:light-dark(#fff,#182a3a);--card2:light-dark(#f1f5f9,#203547);
+--ink:light-dark(#10202e,#e8f1f8);--mute:light-dark(#566879,#93a9bb);--line:light-dark(#d3dee8,#2c465b);
+--blue:#1f8ef1;--red:#e5273f;--redbg:light-dark(#fde7ea,#4a1620);--green:#16a864;--greenbg:light-dark(#e2f7ec,#0f3a28);--amber:#f5a524;--acc:var(--blue)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.5 Nunito,system-ui,sans-serif;overflow-x:clip;min-height:100vh}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.top{display:flex;align-items:center;gap:10px;padding:12px max(3vw,14px);background:var(--card);border-bottom:1px solid var(--line);flex-wrap:wrap;position:sticky;top:0;z-index:4}
+.brand{font-weight:900;font-size:22px;display:flex;align-items:center;gap:8px;margin-right:auto;background:none;border:0;padding:0}
+.brand i{width:30px;height:30px;border-radius:10px;background:var(--amber)}
+.btn{min-height:44px;padding:0 16px;border-radius:12px;border:2px solid var(--line);background:var(--card2);font-weight:800;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.btn.main{background:var(--acc);border-color:var(--acc);color:#fff}
+.btn.danger{color:var(--red);border-color:var(--red);background:transparent}
+.btn:disabled{opacity:.4;cursor:default}
+.wrap{max-width:1240px;margin:0 auto;padding:24px max(3vw,14px) 60px}
+h1{font-size:clamp(28px,4vw,44px);line-height:1.05;margin:0 0 6px;text-wrap:balance}
+.sub{color:var(--mute);margin:0 0 22px;max-width:62ch}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px}
+.mod{background:var(--card);border-radius:22px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 8px 24px #0b1a2a18}
+.mod .art{background:var(--c);height:150px;display:grid;place-items:center}
+.mod .art svg{height:136px}
+.mod .bd{padding:14px 16px 16px;display:flex;flex-direction:column;gap:4px;flex:1}
+.mod h3{margin:0;font-size:20px;line-height:1.15}
+.mod small{color:var(--mute);font-weight:700}
+.mod .row{display:flex;gap:8px;margin-top:auto;padding-top:10px}
+.mod .row .btn{flex:1;justify-content:center}
+.new{border:3px dashed var(--line);background:transparent;border-radius:22px;min-height:260px;font-weight:900;font-size:20px;color:var(--mute)}
+.panel{background:var(--card);border-radius:22px;padding:clamp(16px,3vw,28px);margin-bottom:16px}
+label{font-weight:800;font-size:15px;display:block;margin:12px 0 4px}
+input[type=text],textarea,select{width:100%;min-height:44px;padding:10px 12px;border-radius:12px;border:2px solid var(--line);background:var(--card2);font-size:16px}
+textarea{min-height:64px;resize:vertical}
+.qlist{display:grid;gap:8px;margin-top:12px}
+.qi{display:flex;gap:10px;align-items:center;padding:10px 12px;border-radius:14px;background:var(--card2)}
+.qi span{flex:1;font-weight:700}
+.optEd{display:grid;grid-template-columns:48px minmax(0,1fr);gap:10px;padding:12px;border-radius:16px;background:var(--card2);margin-top:10px;border:2px solid transparent}
+.optEd.isok{border-color:var(--green)}
+.optEd .lt{display:grid;place-items:center;align-content:start;gap:4px;font-weight:900;font-size:20px}
+.optEd .lt input{width:22px;height:22px;accent-color:var(--green)}
+.optEd textarea{min-height:52px;margin-top:6px;font-size:15px}
+.pick{display:flex;gap:8px;flex-wrap:wrap}
+.pick button{border:3px solid transparent;border-radius:16px;background:var(--c);padding:4px;width:76px;height:76px}
+.pick button[aria-pressed=true]{border-color:var(--ink)}
+.pick svg{width:100%;height:100%}
+.seg{display:flex;flex-wrap:wrap;gap:8px}
+.seg button{min-height:44px;padding:0 16px;border-radius:12px;border:2px solid var(--line);background:var(--card2);font-weight:800}
+.seg button[aria-pressed=true]{background:var(--acc);border-color:var(--acc);color:#fff}
+.hint{font-size:14px;color:var(--mute);margin-top:8px}
+.tip{background:light-dark(#fff6e0,#3a2c0c);border-radius:14px;padding:10px 14px;font-size:15px;margin-top:14px}
+/* modo clase */
+.play{display:grid;grid-template-columns:minmax(0,1fr) minmax(280px,30%);gap:18px;padding:18px max(2vw,12px);min-height:calc(100vh - 70px)}
+.pbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.pill{font-weight:900;padding:6px 14px;border-radius:99px;background:var(--card);white-space:nowrap}
+.pill.timer{background:var(--acc);color:#fff;min-width:64px;text-align:center}
+.pill.timer.low{background:var(--red)}
+.teams{display:flex;gap:8px;flex-wrap:wrap}
+.team{padding:6px 14px;border-radius:12px;background:var(--card);font-weight:900;border:3px solid transparent;white-space:nowrap}
+.team.turn{border-color:var(--amber)}
+.qbox{background:var(--card);border-radius:24px;padding:clamp(18px,2.4vw,34px);margin-top:14px}
+.qbox .ql{color:var(--mute);font-weight:800}
+.qbox h2{font-size:clamp(26px,3.4vw,48px);line-height:1.1;margin:6px 0 16px;text-wrap:balance}
+.sol{display:none;border-radius:18px;padding:12px 18px;margin-bottom:14px;color:#fff;font-size:clamp(16px,1.5vw,21px)}
+.sol.show{display:block}.sol.bad{background:var(--red)}.sol.good{background:var(--green)}
+.sol b{display:block;font-size:clamp(20px,2vw,28px)}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.opt{display:grid;grid-template-columns:clamp(44px,4vw,60px) minmax(0,1fr);gap:14px;align-items:start;text-align:left;padding:14px;border-radius:18px;border:3px solid var(--line);background:var(--card2);transition:transform .15s,box-shadow .2s}
+.opt:hover:not(:disabled){border-color:var(--acc)}
+.opt:disabled{cursor:default}
+.let{aspect-ratio:1;border-radius:50%;display:grid;place-items:center;font-weight:900;font-size:clamp(18px,1.8vw,26px);background:var(--card);border:3px solid var(--line)}
+.ot{font-weight:800;font-size:clamp(18px,2vw,28px);line-height:1.2;padding-top:6px}
+.why{display:none;font-size:clamp(14px,1.2vw,17px);color:var(--mute);margin-top:6px;font-weight:700}
+.done .why{display:block}
+.opt.wrong{background:var(--redbg);border-color:var(--red)}.opt.wrong .let{background:var(--red);border-color:var(--red);color:#fff}
+.opt.right{background:var(--greenbg);border-color:var(--green)}.opt.right .let{background:var(--green);border-color:var(--green);color:#fff}
+.opt.now{transform:scale(1.02);box-shadow:0 0 0 5px var(--amber)}
+.pnav{display:flex;justify-content:space-between;gap:10px;margin-top:16px;flex-wrap:wrap}
+.keys{font-size:13px;color:var(--mute);align-self:center}
+.tutor{background:var(--card);border-radius:24px;overflow:hidden;display:flex;flex-direction:column;align-self:start;position:sticky;top:84px}
+.stage{background:var(--c);height:clamp(200px,30vh,320px);display:grid;place-items:center;position:relative}
+.stage svg{height:90%}
+.status{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);background:#000a;color:#fff;font-size:13px;padding:3px 12px;border-radius:99px;white-space:nowrap}
+.say{padding:16px 18px;font-size:clamp(17px,1.5vw,22px);font-weight:700;min-height:120px}
+.ctr{display:flex;justify-content:center;gap:14px;padding:0 0 16px}
+.round{width:48px;height:48px;border-radius:50%;border:0;display:grid;place-items:center;background:var(--card2)}
+.round.on{background:var(--red);color:#fff}
+.round svg{width:22px;height:22px}
+.mouth{transform-box:fill-box;transform-origin:center}
+.talk .mouth{animation:yap .2s infinite alternate}
+@keyframes yap{to{transform:scaleY(1.9)}}
+.lid{transform-box:fill-box;transform-origin:center;animation:blink 4.5s infinite}
+@keyframes blink{0%,93%,100%{transform:scaleY(0)}96%{transform:scaleY(1)}}
+.result{text-align:center;max-width:720px;margin:0 auto}
+.result .big{font-size:clamp(44px,8vw,96px);font-weight:900;line-height:1}
+.podium{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin:18px 0}
+.podium div{background:var(--card);border-radius:16px;padding:12px 20px;font-weight:900;font-size:22px}
+.podium div.win{background:var(--amber);color:#1a1200}
+@media(max-width:900px){.play{grid-template-columns:1fr}.tutor{position:static;order:-1;flex-direction:row;flex-wrap:wrap}.stage{width:140px;height:140px}.say{flex:1;min-height:0;font-size:16px}.ctr{width:100%}}
+@media(max-width:600px){.opts{grid-template-columns:1fr}.top .btn span{display:none}}
+@media(prefers-reduced-motion:reduce){.talk .mouth,.lid{animation:none}.opt{transition:none}}
+</style>
+</head>
+<body>
+<header class="top" id="top"></header>
+<div id="app"></div>
+<input type="file" id="file" accept=".json,application/json" hidden>
+
+<script>
+{
+/* ---------- mascotas ---------- */
+const MASCOTS={
+ buho:{name:'Bubo',kind:'owl',c:'#d9822b',b:'#f6d9a8',d:'#a85f1c',acc:'steth',bg:'#2f6f9e',pitch:1.15},
+ castor:{name:'Tito',kind:'round',c:'#8a5a3b',b:'#d9b48f',d:'#5e3b25',acc:'helmet',bg:'#3a5f8a',pitch:1.0,teeth:1},
+ zorra:{name:'Lexa',kind:'pointy',c:'#e26a2c',b:'#fbe3cf',d:'#b2471a',acc:'glasses',bg:'#5b3f73',pitch:1.2},
+ llama:{name:'Lucas',kind:'llama',c:'#efe3cf',b:'#fff8ec',d:'#b89f7c',acc:'tie',bg:'#1f7a6d',pitch:0.95},
+ tortuga:{name:'Tula',kind:'turtle',c:'#7fc28a',b:'#e9f3c6',d:'#3f7d4c',acc:'book',bg:'#b0532f',pitch:1.1},
+ gata:{name:'Mimi',kind:'pointy',c:'#9a90b8',b:'#ece8f6',d:'#6c628f',acc:'heart',bg:'#2f5f7a',pitch:1.25},
+ oso:{name:'Bruno',kind:'round',c:'#5d7891',b:'#cfdbe6',d:'#3d5468',acc:'pencil',bg:'#c27a1f',pitch:0.9},
+ loro:{name:'Rocco',kind:'parrot',c:'#e23b3b',b:'#ffd84d',d:'#2a9d5c',acc:'mic',bg:'#24456b',pitch:1.3}
+};
+function mascotSVG(key){
+ const m=MASCOTS[key]||MASCOTS.buho,{c,b,d}=m;let s='';
+ if(m.kind==='turtle')s+=`<ellipse cx="100" cy="118" rx="80" ry="70" fill="${d}"/><path d="M60 80 l20 -18 l40 0 l20 18 l-10 30 l-60 0Z" fill="#5a9a63" opacity=".7"/>`;
+ if(m.kind==='owl')s+=`<path d="M52 62 L44 22 L80 46Z M148 62 L156 22 L120 46Z" fill="${d}"/>`;
+ if(m.kind==='round')s+=`<circle cx="52" cy="56" r="20" fill="${d}"/><circle cx="148" cy="56" r="20" fill="${d}"/><circle cx="52" cy="56" r="9" fill="${b}"/><circle cx="148" cy="56" r="9" fill="${b}"/>`;
+ if(m.kind==='pointy')s+=`<path d="M46 78 L52 14 L92 48Z M154 78 L148 14 L108 48Z" fill="${c}"/><path d="M56 62 L58 30 L80 50Z M144 62 L142 30 L120 50Z" fill="${b}"/>`;
+ if(m.kind==='llama')s+=`<ellipse cx="70" cy="34" rx="11" ry="30" fill="${c}" transform="rotate(-12 70 34)"/><ellipse cx="130" cy="34" rx="11" ry="30" fill="${c}" transform="rotate(12 130 34)"/><ellipse cx="70" cy="36" rx="5" ry="20" fill="${d}" transform="rotate(-12 70 34)"/><ellipse cx="130" cy="36" rx="5" ry="20" fill="${d}" transform="rotate(12 130 34)"/>`;
+ if(m.kind==='parrot')s+=`<path d="M100 48 q-6 -36 14 -40 q-2 20 2 30 q10 -20 26 -18 q-14 14 -18 30Z" fill="${d}"/>`;
+ s+=`<ellipse cx="100" cy="190" rx="58" ry="7" fill="#0003"/>`;
+ s+=`<ellipse cx="100" cy="116" rx="${m.kind==='llama'?54:64}" ry="72" fill="${c}"/><ellipse cx="100" cy="142" rx="40" ry="42" fill="${b}"/>`;
+ s+=`<path d="M38 112 q-16 40 14 66 q10 -36 -14 -66Z M162 112 q16 40 -14 66 q-10 -36 14 -66Z" fill="${d}"/>`;
+ s+=`<circle cx="76" cy="80" r="23" fill="#fff"/><circle cx="124" cy="80" r="23" fill="#fff"/><circle cx="79" cy="83" r="10" fill="#1b2430"/><circle cx="121" cy="83" r="10" fill="#1b2430"/><circle cx="83" cy="78" r="3.6" fill="#fff"/><circle cx="125" cy="78" r="3.6" fill="#fff"/>`;
+ s+=`<circle class="lid" cx="76" cy="80" r="24" fill="${c}"/><circle class="lid" cx="124" cy="80" r="24" fill="${c}"/>`;
+ s+=`<circle cx="62" cy="108" r="7" fill="#ff7a8a" opacity=".45"/><circle cx="138" cy="108" r="7" fill="#ff7a8a" opacity=".45"/>`;
+ if(m.kind==='owl'||m.kind==='parrot')s+=`<path class="mouth" d="M89 102 L111 102 L100 ${m.kind==='parrot'?126:120}Z" fill="${m.kind==='parrot'?'#2b2b2b':'#f5a524'}"/>`;
+ else s+=`<ellipse cx="100" cy="103" rx="7" ry="5" fill="#3a2a2a"/><ellipse class="mouth" cx="100" cy="116" rx="9" ry="4" fill="#6b1f2a"/>${m.teeth?'<rect x="94" y="119" width="12" height="9" rx="2" fill="#fff"/>':''}`;
+ const A={
+  steth:`<path d="M70 168 q30 18 60 0" stroke="#2b4459" stroke-width="5" fill="none"/><circle cx="130" cy="168" r="7" fill="#c7d3de" stroke="#2b4459" stroke-width="3"/>`,
+  helmet:`<path d="M46 60 Q100 -6 154 60Z" fill="#f5c518"/><rect x="38" y="56" width="124" height="10" rx="5" fill="#e0a800"/>`,
+  glasses:`<g fill="none" stroke="#1b2430" stroke-width="4"><circle cx="76" cy="80" r="26"/><circle cx="124" cy="80" r="26"/><path d="M102 80h-4"/></g>`,
+  tie:`<path d="M92 150 L108 150 L104 160 L112 186 L100 194 L88 186 L96 160Z" fill="#c62f3f"/>`,
+  book:`<rect x="70" y="160" width="60" height="28" rx="4" fill="#2f6fd6"/><rect x="76" y="164" width="48" height="4" fill="#fff" opacity=".7"/>`,
+  heart:`<path d="M100 172 l-14 -14 a8 8 0 0 1 14 -10 a8 8 0 0 1 14 10Z" fill="#ff5b7f"/>`,
+  pencil:`<g transform="rotate(30 160 150)"><rect x="152" y="110" width="14" height="60" fill="#f5c518"/><path d="M152 170h14l-7 14Z" fill="#f2d2a6"/><rect x="152" y="104" width="14" height="8" fill="#ff7a8a"/></g>`,
+  mic:`<rect x="38" y="140" width="8" height="40" rx="4" fill="#555"/><circle cx="42" cy="138" r="12" fill="#333"/>`
+ };
+ s+=A[m.acc]||'';
+ return `<svg viewBox="0 0 200 200" role="img" aria-label="${m.name}">${s}</svg>`;
+}
+
+/* ---------- preguntas de ejemplo ---------- */
+const mk=(q,ok,...o)=>({q,ok,o});
+const SEED=[
+ {id:'salud',name:'Salud y Medicina',m:'buho',qs:[
+  mk('¿Qué órgano produce la bilis?',2,['La vesícula biliar','Solo la almacena y la concentra. Es como decir que la refri cocina la comida porque ahí la guardas.'],['El páncreas','Produce jugo pancreático con enzimas, además de insulina y glucagón. Bilis, no.'],['El hígado','Los hepatocitos del hígado producen la bilis, que ayuda a digerir las grasas.'],['El estómago','Produce ácido clorhídrico y pepsina para digerir proteínas.']),
+  mk('¿Cuál es el hueso más largo del cuerpo humano?',1,['El húmero','Es el hueso largo del brazo, pero es más corto que el del muslo.'],['El fémur','El fémur, en el muslo, es el hueso más largo y uno de los más fuertes.'],['La tibia','Es larga, pero queda en segundo lugar detrás del fémur.'],['La columna vertebral','No es un solo hueso: es una cadena de unas 33 vértebras.']),
+  mk('¿Qué células de la sangre transportan el oxígeno?',2,['Los leucocitos','Son los glóbulos blancos: defienden de infecciones.'],['Las plaquetas','Son fragmentos celulares que ayudan a coagular la sangre.'],['Los eritrocitos','Los glóbulos rojos llevan hemoglobina, que se une al oxígeno.'],['Los linfocitos','Son un tipo de glóbulo blanco del sistema inmune.']),
+  mk('¿Qué hormona disminuye la glucosa en la sangre?',1,['El glucagón','Hace lo contrario: sube la glucosa liberando glucógeno del hígado.'],['La insulina','La produce el páncreas y hace que las células absorban la glucosa.'],['El cortisol','Es la hormona del estrés y tiende a subir la glucosa.'],['La adrenalina','Prepara al cuerpo para huir o pelear y también eleva la glucosa.'])]},
+ {id:'sistemas',name:'Ingeniería y Sistemas',m:'castor',qs:[
+  mk('¿Qué significa CPU?',0,['Unidad Central de Procesamiento','Es el cerebro de la computadora: ejecuta las instrucciones de los programas.'],['Memoria de acceso aleatorio','Eso es la RAM, la memoria de trabajo temporal.'],['Unidad de procesamiento gráfico','Eso es la GPU, especializada en gráficos y cálculos en paralelo.'],['Sistema básico de entrada y salida','Eso es la BIOS, que arranca el equipo.']),
+  mk('¿Cuántos bits tiene un byte?',1,['4','Cuatro bits forman un nibble, medio byte.'],['8','Un byte son 8 bits, y puede representar 256 valores.'],['16','Dieciséis bits son dos bytes.'],['1024','1024 es la cantidad de bytes de un kibibyte, no bits de un byte.']),
+  mk('¿Qué estructura de datos funciona como LIFO, el último en entrar es el primero en salir?',1,['La cola','La cola es FIFO: el primero en entrar es el primero en salir.'],['La pila','Como una pila de platos: sacas siempre el último que pusiste.'],['La lista enlazada','Es una cadena de nodos; por sí sola no impone ese orden de salida.'],['El árbol binario','Es una estructura jerárquica, no de entrada y salida.']),
+  mk('¿Qué comando SQL se usa para consultar datos?',0,['SELECT','SELECT lee y devuelve filas de una o más tablas.'],['INSERT','INSERT agrega filas nuevas.'],['UPDATE','UPDATE modifica filas que ya existen.'],['DELETE','DELETE borra filas. Cuidado con olvidar el WHERE.'])]},
+ {id:'derecho',name:'Derecho',m:'zorra',qs:[
+  mk('¿Cuál es la norma de mayor jerarquía en el Perú?',0,['La Constitución','Está en la cima del ordenamiento: ninguna norma puede contradecirla.'],['La ley','Está por debajo de la Constitución y debe respetarla.'],['El decreto supremo','Lo dicta el Ejecutivo y está por debajo de la ley.'],['La ordenanza municipal','Rige en un ámbito local y está aún más abajo.']),
+  mk('¿Qué poder del Estado se encarga principalmente de hacer las leyes?',1,['El Poder Ejecutivo','Gobierna y ejecuta las leyes; puede proponerlas, pero no las aprueba.'],['El Poder Legislativo','El Congreso debate y aprueba las leyes.'],['El Poder Judicial','Aplica las leyes para resolver conflictos.'],['El Tribunal Constitucional','Controla que las normas respeten la Constitución, no las crea.']),
+  mk('¿Qué significa "in dubio pro reo"?',0,['En caso de duda, a favor del acusado','Si no hay certeza de culpabilidad, se resuelve a favor del procesado.'],['La ley no es retroactiva','Es otro principio distinto, sobre la aplicación de la ley en el tiempo.'],['Nadie puede alegar ignorancia de la ley','También es otro principio: la ley se presume conocida.'],['Quien acusa debe probar','Eso se relaciona con la carga de la prueba, no con la duda.']),
+  mk('¿A qué edad se adquiere la mayoría de edad en el Perú?',1,['16 años','A esa edad todavía se es menor, salvo excepciones puntuales.'],['18 años','A los 18 se adquiere la capacidad plena de ejercicio.'],['21 años','Fue la mayoría de edad en códigos antiguos, pero hoy no.'],['25 años','No existe esa regla para la mayoría de edad.'])]},
+ {id:'negocios',name:'Negocios y Contabilidad',m:'llama',qs:[
+  mk('¿Cuál es la ecuación contable básica?',0,['Activo = Pasivo + Patrimonio','Todo lo que tiene la empresa se financia con deudas o con aportes de los dueños.'],['Activo = Pasivo − Patrimonio','El patrimonio se suma, no se resta.'],['Patrimonio = Activo + Pasivo','El patrimonio es el activo menos el pasivo.'],['Ingresos = Gastos + Activo','Mezcla cuentas de resultados con cuentas de balance.']),
+  mk('¿Qué impuesto grava las ventas en el Perú con una tasa general de 18%?',0,['El IGV','El IGV, junto con el Impuesto de Promoción Municipal, suma el 18%.'],['El Impuesto a la Renta','Grava las ganancias, no cada venta.'],['El ISC','Es selectivo: solo para ciertos bienes como licores o combustibles.'],['El ITF','Grava algunas operaciones bancarias, no las ventas.']),
+  mk('¿Qué es el punto de equilibrio?',0,['Cuando las ventas cubren los costos totales','No hay ganancia ni pérdida; desde ahí empiezas a ganar.'],['El nivel de máxima utilidad','Eso es otra cosa: en el equilibrio la utilidad es cero.'],['El precio más alto del mercado','No tiene que ver con el precio máximo.'],['Cuando la oferta iguala a la demanda','Eso es el equilibrio de mercado, un concepto de economía.']),
+  mk('En un análisis FODA, ¿cuáles son los factores externos?',1,['Fortalezas y Debilidades','Esas son internas: dependen de la propia empresa.'],['Oportunidades y Amenazas','Vienen del entorno: mercado, competencia, leyes.'],['Fortalezas y Oportunidades','Mezcla una interna con una externa.'],['Debilidades y Amenazas','También mezcla una interna con una externa.'])]},
+ {id:'educacion',name:'Educación',m:'tortuga',qs:[
+  mk('¿Quién propuso la teoría de las inteligencias múltiples?',1,['Jean Piaget','Propuso las etapas del desarrollo cognitivo.'],['Howard Gardner','Gardner planteó que hay varias inteligencias, no una sola.'],['Lev Vygotsky','Es conocido por la zona de desarrollo próximo.'],['B. F. Skinner','Trabajó el condicionamiento operante.']),
+  mk('¿Qué es la evaluación formativa?',0,['La que se hace durante el proceso para retroalimentar','Sirve para ajustar la enseñanza mientras se aprende.'],['La que se hace al final para calificar','Esa es la sumativa.'],['La que se hace al inicio para ver saberes previos','Esa es la diagnóstica.'],['Un examen externo estandarizado','Es una prueba externa, no la evaluación formativa del aula.']),
+  mk('¿De quién es el concepto de zona de desarrollo próximo?',0,['Lev Vygotsky','Es la distancia entre lo que el alumno hace solo y lo que logra con ayuda.'],['María Montessori','Creó un método basado en la autonomía y materiales concretos.'],['Jean Piaget','Se enfocó en etapas del desarrollo, no en este concepto.'],['Paulo Freire','Es autor de la Pedagogía del oprimido.']),
+  mk('En la taxonomía de Bloom revisada, ¿cuál es el nivel más alto?',3,['Recordar','Es el nivel más básico.'],['Comprender','Es el segundo nivel.'],['Aplicar','Es un nivel intermedio.'],['Crear','Producir algo nuevo es el nivel más alto de la versión revisada.'])]},
+ {id:'psicologia',name:'Psicología',m:'gata',qs:[
+  mk('¿Quién es considerado el padre del psicoanálisis?',0,['Sigmund Freud','Freud desarrolló el psicoanálisis y el estudio del inconsciente.'],['Carl Jung','Fue su discípulo, pero se separó y creó la psicología analítica.'],['Iván Pávlov','Era fisiólogo y estudió el condicionamiento clásico.'],['Abraham Maslow','Es de la psicología humanista y la pirámide de necesidades.']),
+  mk('¿Qué hay en la base de la pirámide de Maslow?',1,['La autorrealización','Está en la cima, no en la base.'],['Las necesidades fisiológicas','Comer, dormir, respirar: lo básico va primero.'],['El reconocimiento','Es un nivel alto: la estima.'],['La afiliación','Es un nivel intermedio: amistad y pertenencia.']),
+  mk('¿Quién demostró el condicionamiento clásico con perros?',0,['Iván Pávlov','Asoció un sonido con la comida y los perros salivaban al oírlo.'],['B. F. Skinner','Trabajó el condicionamiento operante, con premios y castigos.'],['Albert Bandura','Estudió el aprendizaje por observación.'],['Harry Harlow','Estudió el apego con monos.']),
+  mk('¿Qué lóbulo del cerebro procesa principalmente la visión?',1,['El frontal','Se encarga de planificar y tomar decisiones.'],['El occipital','Está en la parte de atrás y procesa lo que vemos.'],['El temporal','Tiene que ver con la audición y la memoria.'],['El parietal','Integra sensaciones del cuerpo y el espacio.'])]},
+ {id:'arquitectura',name:'Arquitectura',m:'oso',qs:[
+  mk('¿Quién diseñó la Casa de la Cascada?',1,['Le Corbusier','Es famoso por la Villa Savoye, no por esta casa.'],['Frank Lloyd Wright','Diseñó la Casa de la Cascada sobre un arroyo en Pensilvania.'],['Mies van der Rohe','Es famoso por el Pabellón de Barcelona.'],['Oscar Niemeyer','Es conocido por los edificios de Brasilia.']),
+  mk('En arquitectura, ¿qué es una planta?',0,['Un corte horizontal visto desde arriba','Muestra la distribución de ambientes, muros y puertas.'],['La vista exterior de una fachada','Eso es una elevación.'],['Un corte vertical del edificio','Eso es un corte o sección.'],['Una vista en tres dimensiones','Eso es una perspectiva.']),
+  mk('¿Qué escala muestra más detalle?',3,['1:500','Se usa para planos de ubicación: muy poco detalle.'],['1:100','Sirve para planos generales.'],['1:50','Da más detalle, pero no tanto como la siguiente.'],['1:20','Cada unidad del plano es solo 20 en la realidad: el dibujo es más grande y detallado.']),
+  mk('¿A quién se atribuye la frase "menos es más" en arquitectura?',0,['Mies van der Rohe','La hizo famosa como lema de la arquitectura moderna.'],['Antoni Gaudí','Su obra es todo lo contrario: llena de formas y detalles.'],['Zaha Hadid','Es conocida por formas curvas y fluidas.'],['Frank Gehry','Es conocido por formas metálicas retorcidas.'])]},
+ {id:'comunicaciones',name:'Comunicaciones',m:'loro',qs:[
+  mk('¿Quién dijo que "el medio es el mensaje"?',0,['Marshall McLuhan','McLuhan sostuvo que el medio influye tanto como el contenido.'],['Harold Lasswell','Es conocido por su modelo de quién dice qué, por qué canal y con qué efecto.'],['Umberto Eco','Fue semiólogo y escritor, pero la frase no es suya.'],['Noam Chomsky','Es lingüista y crítico de medios, pero la frase no es suya.']),
+  mk('En la pirámide invertida de una noticia, ¿qué va primero?',0,['Lo más importante','El dato principal va arriba por si el lector no termina.'],['Los antecedentes','El contexto va después.'],['Los datos secundarios','Van al final.'],['La opinión del periodista','En una noticia no debería ir opinión.']),
+  mk('¿Qué elemento de la comunicación es el medio por el que viaja el mensaje?',2,['El emisor','Es quien envía el mensaje.'],['El receptor','Es quien recibe el mensaje.'],['El canal','Por ahí viaja: el aire, el papel, la pantalla.'],['El código','Son los signos que se usan, como el idioma.']),
+  mk('¿Cuál NO es una de las 5W del periodismo?',3,['Qué','Sí es: what.'],['Quién','Sí es: who.'],['Dónde','Sí es: where.'],['Cuánto','No es una de las 5W, que son qué, quién, cuándo, dónde y por qué.'])]}
+];
+const LINES={
+ bad:['Uy, no del todo. Siéntate que te explico.','Mmm, casi. Pero no. Escuchen bien.','Ay, no. Esto entra en el examen, ¿eh?','Uf, no. Pero tranquilos, para eso estoy.','Respuesta valiente, pero incorrecta.'],
+ good:['¡Eso! Bien ahí.','¡Correcto! Se nota que estudiaron.','¡Muy bien! Así me gusta.','¡Exacto! Aplausos para ustedes.']
+};
+
+/* ---------- estado y almacenamiento ---------- */
+const KEY='repasa.v1',SKEY='repasa.voz';
+const clone=x=>JSON.parse(JSON.stringify(x));
+let mods,prefs;
+try{mods=JSON.parse(localStorage.getItem(KEY))}catch(e){}
+if(!Array.isArray(mods))mods=clone(SEED);
+try{prefs=JSON.parse(localStorage.getItem(SKEY))}catch(e){}
+prefs=Object.assign({voice:'',rate:1,muted:false},prefs||{});
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(mods))}catch(e){}};
+const savePrefs=()=>{try{localStorage.setItem(SKEY,JSON.stringify(prefs))}catch(e){}};
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const $=id=>document.getElementById(id);
+const app=$('app'),top=$('top');
+const L='ABCD';
+const rnd=a=>a[Math.floor(Math.random()*a.length)];
+const modBy=id=>mods.find(m=>m.id===id);
+
+/* ---------- voz ---------- */
+const synth=('speechSynthesis' in window)?window.speechSynthesis:null;
+let voices=[];
+function loadVoices(){if(!synth)return;
+ voices=synth.getVoices().filter(v=>/^es/i.test(v.lang)).map(v=>{let s=0;
+  if(/natural|online|neural|enhanced|premium/i.test(v.name))s+=10;
+  if(/(PE|MX|US|419|CO|AR|CL)/i.test(v.lang))s+=3;
+  if(/google/i.test(v.name))s+=2;
+  return {v,s}}).sort((a,b)=>b.s-a.s).map(x=>x.v);}
+if(synth){loadVoices();synth.onvoiceschanged=()=>{loadVoices();try{if(view.name==='voz')render()}catch(e){}}}
+const curVoice=()=>voices.find(v=>v.name===prefs.voice)||voices[0]||null;
+const hasNatural=()=>voices.some(v=>/natural|online|neural|enhanced|premium/i.test(v.name));
+let run=0;
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+function speakOne(text,pitch){
+ return new Promise(res=>{
+  if(prefs.muted||!synth){wait(Math.min(8000,1000+text.length*40)).then(res);return}
+  let done=false;const fin=()=>{if(!done){done=true;res()}};
+  try{const u=new SpeechSynthesisUtterance(text),v=curVoice();u.lang=v?v.lang:'es-PE';if(v)u.voice=v;
+   u.rate=prefs.rate;u.pitch=pitch||1;u.onend=fin;u.onerror=fin;synth.speak(u);setTimeout(fin,3000+text.length*120/prefs.rate);
+  }catch(e){wait(1000+text.length*40).then(fin)}
+ });
+}
+function stopTalk(){run++;if(synth)try{synth.cancel()}catch(e){}
+ const t=document.querySelector('.tutor');if(t)t.classList.remove('talk');
+ const st=$('status');if(st)st.textContent=play&&play.mascot?play.mascot.name+' te escucha…':'';
+ hl(null)}
+function hl(k){document.querySelectorAll('.opt').forEach(b=>b.classList.toggle('now',+b.dataset.k===k))}
+async function speakSeq(seq,after){
+ stopTalk();const me=run,t=document.querySelector('.tutor'),m=play.mascot;
+ if(t)t.classList.add('talk');$('status').textContent=m.name+' está hablando…';
+ for(const [k,txt] of seq){if(me!==run)return;hl(k);$('say').textContent=txt;await speakOne(txt,m.pitch);if(me!==run)return;await wait(220)}
+ if(me!==run)return;if(t)t.classList.remove('talk');$('status').textContent=m.name+' te escucha…';hl(null);if(after)after();
+}
+
+/* ---------- vistas ---------- */
+let view={name:'home'},play=null,timerId=null;
+function go(v){stopTalk();clearInterval(timerId);view=v;render();scrollTo(0,0)}
+function header(extra=''){
+ top.innerHTML=`<button class="brand" id="home"><i></i>Repasa</button>${extra}
+ <button class="btn" id="vozBtn" aria-label="Ajustes de voz">Voz</button>`;
+ $('home').onclick=()=>go({name:'home'});$('vozBtn').onclick=()=>go({name:'voz',back:view});
+}
+function render(){document.documentElement.style.setProperty('--acc','#1f8ef1');
+ ({home,module:modView,edit:editView,setup,play:playView,result,voz:vozView})[view.name]();}
+
+function home(){
+ header(`<button class="btn" id="imp">Importar módulo</button>`);
+ $('imp').onclick=()=>$('file').click();
+ app.innerHTML=`<main class="wrap"><h1>Repasa en clase</h1>
+ <p class="sub">Proyecta la pregunta, los alumnos responden en voz alta y tú haces clic en la respuesta. La mascota de cada carrera explica por qué va cada opción.</p>
+ <div class="grid">${mods.map(m=>{const ms=MASCOTS[m.m]||MASCOTS.buho;return `<article class="mod" style="--c:${ms.bg}">
+  <div class="art">${mascotSVG(m.m)}</div><div class="bd"><h3>${esc(m.name)}</h3><small>Con ${ms.name} · ${m.qs.length} pregunta${m.qs.length===1?'':'s'}</small>
+  <div class="row"><button class="btn main" data-play="${m.id}" ${m.qs.length?'':'disabled'}>Jugar</button><button class="btn" data-mod="${m.id}">Editar</button></div></div></article>`}).join('')}
+  <button class="new" id="nuevo">+ Nuevo módulo</button></div>
+  <p class="hint">Las preguntas se guardan en este navegador. Exporta un módulo para pasárselo a otro profesor.</p></main>`;
+ app.querySelectorAll('[data-play]').forEach(b=>b.onclick=()=>go({name:'setup',id:b.dataset.play}));
+ app.querySelectorAll('[data-mod]').forEach(b=>b.onclick=()=>go({name:'module',id:b.dataset.mod}));
+ $('nuevo').onclick=()=>{const m={id:'m'+Date.now().toString(36),name:'Nuevo módulo',m:'buho',qs:[]};mods.push(m);save();go({name:'module',id:m.id})};
+}
+
+function modView(){
+ const m=modBy(view.id);if(!m)return go({name:'home'});
+ header(`<button class="btn" id="back">← Módulos</button>`);$('back').onclick=()=>go({name:'home'});
+ app.innerHTML=`<main class="wrap"><div class="panel">
+  <label for="mn">Nombre del módulo o carrera</label><input type="text" id="mn" value="${esc(m.name)}">
+  <label>Mascota tutora</label><div class="pick">${Object.keys(MASCOTS).map(k=>`<button style="--c:${MASCOTS[k].bg}" data-k="${k}" aria-pressed="${m.m===k}" title="${MASCOTS[k].name}">${mascotSVG(k)}</button>`).join('')}</div>
+  <p class="hint">${MASCOTS[m.m].name} será quien explique en este módulo.</p></div>
+  <div class="panel"><div class="pnav" style="margin:0"><h2 style="margin:0">Preguntas (${m.qs.length})</h2><button class="btn main" id="addq">+ Agregar pregunta</button></div>
+  <div class="qlist">${m.qs.map((q,i)=>`<div class="qi"><span>${i+1}. ${esc(q.q)}</span><button class="btn" data-e="${i}">Editar</button><button class="btn danger" data-d="${i}">Borrar</button></div>`).join('')||'<p class="hint">Aún no hay preguntas. Agrega la primera.</p>'}</div></div>
+  <div class="pnav"><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn main" id="jugar" ${m.qs.length?'':'disabled'}>Jugar en clase</button><button class="btn" id="exp">Exportar módulo</button></div><button class="btn danger" id="delm">Borrar módulo</button></div>
+  <p class="hint" id="msg"></p></main>`;
+ $('mn').oninput=e=>{m.name=e.target.value||'Sin nombre';save()};
+ app.querySelectorAll('.pick button').forEach(b=>b.onclick=()=>{m.m=b.dataset.k;save();render()});
+ $('addq').onclick=()=>go({name:'edit',id:m.id,qi:-1});
+ app.querySelectorAll('[data-e]').forEach(b=>b.onclick=()=>go({name:'edit',id:m.id,qi:+b.dataset.e}));
+ app.querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>{if(b.dataset.sure){m.qs.splice(+b.dataset.d,1);save();render()}else{b.dataset.sure=1;b.textContent='¿Seguro?'}});
+ $('jugar').onclick=()=>go({name:'setup',id:m.id});
+ $('exp').onclick=()=>exportMod(m);
+ $('delm').onclick=e=>{const b=e.currentTarget;if(b.dataset.sure){mods=mods.filter(x=>x!==m);save();go({name:'home'})}else{b.dataset.sure=1;b.textContent='¿Borrar de verdad?'}};
+}
+function exportMod(m){
+ const data=JSON.stringify({repasa:1,modulo:m},null,1),name=(m.name||'modulo').toLowerCase().replace(/[^a-z0-9]+/gi,'-')+'.json';
+ try{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([data],{type:'application/json'}));a.download=name;document.body.appendChild(a);a.click();a.remove();$('msg').textContent='Se descargó '+name+'.'}
+ catch(e){$('msg').textContent='No se pudo descargar aquí.'}
+}
+$('file').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;
+ try{const j=JSON.parse(await f.text()),m=j.modulo||j;
+  if(!m||!Array.isArray(m.qs))throw 0;
+  m.qs=m.qs.filter(q=>q&&q.q&&Array.isArray(q.o)&&q.o.length===4);
+  m.id='m'+Date.now().toString(36);if(!MASCOTS[m.m])m.m='buho';m.name=String(m.name||'Módulo importado');
+  mods.push(m);save();go({name:'module',id:m.id});
+ }catch(err){const s=document.querySelector('.sub');if(s)s.textContent='Ese archivo no es un módulo de Repasa válido.'}};
+
+function editView(){
+ const m=modBy(view.id);if(!m)return go({name:'home'});
+ const q=view.qi>=0?clone(m.qs[view.qi]):{q:'',ok:0,o:[['',''],['',''],['',''],['','']]};
+ header(`<button class="btn" id="back">← ${esc(m.name)}</button>`);$('back').onclick=()=>go({name:'module',id:m.id});
+ app.innerHTML=`<main class="wrap" style="max-width:860px"><div class="panel">
+  <h2 style="margin-top:0">${view.qi>=0?'Editar':'Nueva'} pregunta</h2>
+  <label for="qq">Pregunta</label><textarea id="qq" placeholder="Ej.: ¿Qué órgano produce la bilis?">${esc(q.q)}</textarea>
+  <p class="hint">Escribe las 4 opciones y marca la correcta. En cada una explica por qué va o por qué no: eso es lo que dirá ${MASCOTS[m.m].name}.</p>
+  ${q.o.map((o,k)=>`<div class="optEd ${q.ok===k?'isok':''}" data-k="${k}"><div class="lt">${L[k]}<input type="radio" name="ok" value="${k}" ${q.ok===k?'checked':''} aria-label="Opción ${L[k]} es la correcta"></div>
+   <div><input type="text" class="ot_" placeholder="Opción ${L[k]}" value="${esc(o[0])}"><textarea class="ow_" placeholder="${q.ok===k?'Por qué es correcta':'Por qué no es correcta'}">${esc(o[1])}</textarea></div></div>`).join('')}
+  <p class="hint">Marca con el círculo la respuesta correcta.</p>
+  <div class="pnav"><button class="btn" id="cancel">Cancelar</button><button class="btn main" id="saveq">Guardar pregunta</button></div><p class="hint" id="err" style="color:var(--red)"></p></div></main>`;
+ app.querySelectorAll('input[name=ok]').forEach(r=>r.onchange=()=>app.querySelectorAll('.optEd').forEach(d=>d.classList.toggle('isok',d.dataset.k===r.value)));
+ $('cancel').onclick=()=>go({name:'module',id:m.id});
+ $('saveq').onclick=()=>{
+  const nq={q:$('qq').value.trim(),ok:+app.querySelector('input[name=ok]:checked').value,o:[...app.querySelectorAll('.optEd')].map(d=>[d.querySelector('.ot_').value.trim(),d.querySelector('.ow_').value.trim()])};
+  if(!nq.q)return $('err').textContent='Falta escribir la pregunta.';
+  if(nq.o.some(o=>!o[0]))return $('err').textContent='Completa las 4 opciones.';
+  nq.o.forEach((o,k)=>{if(!o[1])o[1]=k===nq.ok?'Esta es la respuesta correcta.':'Esta no es la respuesta correcta.'});
+  if(view.qi>=0)m.qs[view.qi]=nq;else m.qs.push(nq);save();go({name:'module',id:m.id});
+ };
+}
+
+let setupOpt={teams:2,time:0,shuffle:true};
+function setup(){
+ const m=modBy(view.id);if(!m)return go({name:'home'});const ms=MASCOTS[m.m];
+ header(`<button class="btn" id="back">← Módulos</button>`);$('back').onclick=()=>go({name:'home'});
+ const seg=(key,vals)=>`<div class="seg">${vals.map(([v,t])=>`<button data-s="${key}" data-v="${v}" aria-pressed="${setupOpt[key]===v}">${t}</button>`).join('')}</div>`;
+ app.innerHTML=`<main class="wrap" style="max-width:860px"><div class="panel" style="display:grid;grid-template-columns:150px minmax(0,1fr);gap:20px;align-items:center">
+  <div style="background:${ms.bg};border-radius:20px;padding:8px">${mascotSVG(m.m)}</div>
+  <div><h1>${esc(m.name)}</h1><p class="sub" style="margin:0">${m.qs.length} preguntas con ${ms.name}.</p></div></div>
+  <div class="panel"><label>Equipos</label>${seg('teams',[[0,'Sin equipos'],[2,'2 equipos'],[3,'3 equipos'],[4,'4 equipos']])}
+  <p class="hint">Con equipos, cada pregunta le toca a un equipo por turno y suma punto si acierta.</p>
+  <label>Tiempo por pregunta</label>${seg('time',[[0,'Sin tiempo'],[20,'20 s'],[30,'30 s'],[60,'60 s']])}
+  <label style="display:flex;gap:10px;align-items:center;margin-top:16px"><input type="checkbox" id="mez" ${setupOpt.shuffle?'checked':''} style="width:22px;height:22px"> Mezclar el orden de las preguntas</label>
+  ${synth&&!hasNatural()?`<p class="tip">Para una voz más natural, abre esta página en <b>Microsoft Edge</b>: trae voces naturales en español. Puedes elegirla en el botón Voz.</p>`:''}
+  ${!synth?`<p class="tip">Este navegador no puede leer en voz alta. Las explicaciones se mostrarán escritas.</p>`:''}
+  <div class="pnav"><span class="keys">En clase: A B C D para responder, Enter para seguir, R repetir, M silenciar, F pantalla completa.</span><button class="btn main" id="start" style="min-height:54px;font-size:20px">Empezar</button></div></div></main>`;
+ app.querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>{setupOpt[b.dataset.s]=+b.dataset.v;render()});
+ $('mez').onchange=e=>setupOpt.shuffle=e.target.checked;
+ $('start').onclick=()=>{
+  const order=m.qs.map((_,i)=>i);if(setupOpt.shuffle)order.sort(()=>Math.random()-.5);
+  play={m,mascot:MASCOTS[m.m],order,idx:0,picked:null,teams:Array(setupOpt.teams).fill(0),hits:0,time:setupOpt.time,left:0,seq:[]};
+  go({name:'play'});
+ };
+}
+
+function playView(){
+ const p=play;if(!p)return go({name:'home'});
+ const q=p.m.qs[p.order[p.idx]],done=p.picked!==null,good=p.picked===q.ok,T=p.teams.length,turn=T?p.idx%T:-1;
+ document.documentElement.style.setProperty('--acc',p.mascot.bg);
+ header(`<button class="btn" id="salir">Salir</button><button class="btn" id="fs">Pantalla<span>&nbsp;completa</span></button>`);
+ $('salir').onclick=()=>go({name:'home'});$('fs').onclick=fullscreen;
+ app.innerHTML=`<main class="play"><section>
+  <div class="pbar"><span class="pill">${p.idx+1} de ${p.order.length}</span>${p.time?`<span class="pill timer" id="tm">${p.left||p.time}</span>`:''}
+   <div class="teams">${p.teams.map((s,i)=>`<span class="team ${i===turn?'turn':''}">Equipo ${i+1}: ${s}</span>`).join('')}</div></div>
+  <div class="qbox ${done?'done':''}"><div class="ql">${T?'Turno del Equipo '+(turn+1):'Pregunta '+(p.idx+1)}</div><h2>${esc(q.q)}</h2>
+   <div class="sol ${done?'show '+(good?'good':'bad'):''}"><b>${good?'¡Correcto!':'No del todo'}</b>${done?esc(q.o[q.ok][0])+': '+esc(q.o[q.ok][1]):''}</div>
+   <div class="opts">${q.o.map((o,k)=>`<button class="opt ${done&&k===q.ok?'right':''} ${done&&k===p.picked&&k!==q.ok?'wrong':''}" data-k="${k}"><span class="let">${L[k]}</span><span><span class="ot">${esc(o[0])}</span><span class="why">${esc(o[1])}</span></span></button>`).join('')}</div>
+   <div class="pnav"><span class="keys">${done?'Toca una opción para que la vuelva a explicar.':'Haz clic en la respuesta que dijeron los alumnos.'}</span><button class="btn main" id="next" ${done?'':'disabled'}>${p.idx===p.order.length-1?'Ver resultados':'Siguiente →'}</button></div></div>
+ </section>
+ <aside class="tutor" style="--c:${p.mascot.bg}"><div class="stage">${mascotSVG(p.m.m)}<span class="status" id="status">${p.mascot.name} te escucha…</span></div>
+  <div class="say" id="say">${done?'':'¿Cuál creen que es? Discútanlo y díganle su respuesta al profe.'}</div>
+  <div class="ctr"><button class="round" id="rep" aria-label="Repetir explicación"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg></button>
+  <button class="round ${prefs.muted?'':'on'}" id="mute" aria-label="${prefs.muted?'Activar voz':'Silenciar'}"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 15c5-5 13-5 18 0l-3 3-3-2v-3a10 10 0 0 0-6 0v3l-3 2z"/></svg></button></div></aside></main>`;
+ app.querySelectorAll('.opt').forEach(b=>b.onclick=()=>choose(+b.dataset.k));
+ $('next').onclick=next;$('rep').onclick=()=>{if(p.seq.length)speakSeq(p.seq)};
+ $('mute').onclick=toggleMute;
+ if(!done&&p.time&&!timerId)startTimer();
+}
+function startTimer(){const p=play;p.left=p.time;clearInterval(timerId);
+ timerId=setInterval(()=>{p.left--;const t=$('tm');if(t){t.textContent=Math.max(0,p.left);t.classList.toggle('low',p.left<=5)}
+  if(p.left<=0){clearInterval(timerId);timerId=null;if(p.picked===null){$('say').textContent='¡Se acabó el tiempo! Díganme su respuesta.';speakOne('¡Se acabó el tiempo!',p.mascot.pitch)}}},1000)}
+function choose(k){
+ const p=play,q=p.m.qs[p.order[p.idx]];
+ if(p.picked!==null){speakSeq([[k,L[k]+', '+q.o[k][0]+'. '+q.o[k][1]]]);return}
+ clearInterval(timerId);timerId=null;p.picked=k;
+ const ok=q.ok,T=p.teams.length;if(k===ok){p.hits++;if(T)p.teams[p.idx%T]++}
+ const seq=[];
+ if(k===ok){seq.push([k,rnd(LINES.good)+' Es la '+L[k]+', '+q.o[k][0]+'. '+q.o[k][1]]);seq.push([null,'Y ojo por qué las otras no:'])}
+ else{seq.push([null,rnd(LINES.bad)]);seq.push([k,'Eligieron la '+L[k]+', '+q.o[k][0]+'. '+q.o[k][1]]);seq.push([ok,'La correcta es la '+L[ok]+', '+q.o[ok][0]+'. '+q.o[ok][1]]);seq.push([null,'Y las demás tampoco:'])}
+ q.o.forEach((o,j)=>{if(j!==k&&j!==ok)seq.push([j,L[j]+', '+o[0]+'. '+o[1]])});
+ p.seq=seq;playView();speakSeq(seq,()=>{$('say').textContent='Cuando quieras, pasamos a la siguiente.'});
+}
+function next(){const p=play;if(p.picked===null)return;stopTalk();
+ if(p.idx===p.order.length-1)return go({name:'result'});
+ p.idx++;p.picked=null;p.seq=[];p.left=0;playView();}
+function toggleMute(){prefs.muted=!prefs.muted;savePrefs();if(prefs.muted&&synth)try{synth.cancel()}catch(e){}
+ const b=$('mute');if(b){b.classList.toggle('on',!prefs.muted);b.setAttribute('aria-label',prefs.muted?'Activar voz':'Silenciar')}}
+function fullscreen(){try{document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen().catch(()=>{})}catch(e){}}
+
+function result(){
+ const p=play;if(!p)return go({name:'home'});const T=p.teams.length,n=p.order.length;
+ header(`<button class="btn" id="salir">← Módulos</button>`);$('salir').onclick=()=>go({name:'home'});
+ const best=T?Math.max(...p.teams):0,winners=p.teams.map((s,i)=>s===best?i+1:0).filter(Boolean);
+ const msg=T?(winners.length>1?'¡Empate entre los equipos '+winners.join(' y ')+'!':'¡Gana el Equipo '+winners[0]+'!'):(p.hits===n?'¡Perfecto! Futuras eminencias.':p.hits>=n/2?'Bien, pero repasen lo que fallaron.':'Hay que repasar. Sin miedo.');
+ app.innerHTML=`<main class="wrap"><div class="result"><div class="tutor" style="--c:${p.mascot.bg};position:static;margin:0 auto 18px;max-width:320px"><div class="stage">${mascotSVG(p.m.m)}<span class="status" id="status"></span></div><div class="say" id="say">${esc(msg)}</div></div>
+  <div class="big">${p.hits} de ${n}</div><p class="sub" style="margin:8px auto">respuestas correctas</p>
+  ${T?`<div class="podium">${p.teams.map((s,i)=>`<div class="${s===best?'win':''}">Equipo ${i+1}: ${s}</div>`).join('')}</div>`:''}
+  <div class="pnav" style="justify-content:center"><button class="btn main" id="again">Jugar otra vez</button><button class="btn" id="mods">Elegir otro módulo</button></div></div></main>`;
+ $('again').onclick=()=>go({name:'setup',id:p.m.id});$('mods').onclick=()=>go({name:'home'});
+ speakSeq([[null,msg]]);
+}
+
+function vozView(){
+ header(`<button class="btn" id="back">← Volver</button>`);
+ $('back').onclick=()=>go(view.back&&view.back.name!=='voz'?view.back:{name:'home'});
+ const cv=curVoice();
+ app.innerHTML=`<main class="wrap" style="max-width:760px"><div class="panel"><h1>Voz de las mascotas</h1>
+  ${!synth?'<p class="tip">Este navegador no puede leer en voz alta.</p>':`
+  <label for="vs">Voz</label><select id="vs">${voices.map(v=>`<option value="${esc(v.name)}" ${cv&&v.name===cv.name?'selected':''}>${esc(v.name)} (${esc(v.lang)})${/natural|online|neural|enhanced|premium/i.test(v.name)?' ★ natural':''}</option>`).join('')||'<option>No hay voces en español</option>'}</select>
+  <label for="rt">Velocidad: <span id="rv">${prefs.rate.toFixed(1)}</span></label><input type="range" id="rt" min="0.7" max="1.4" step="0.1" value="${prefs.rate}" style="width:100%">
+  <div class="pnav"><button class="btn main" id="test">Probar voz</button></div>
+  <p class="tip">Las voces marcadas con ★ suenan mucho más naturales. En Microsoft Edge aparecen voces como Camila (Perú), Dalia (México) o Jorge. En Chrome, las de Google son las mejores disponibles.</p>`}
+  </div><div class="panel"><h2 style="margin-top:0">Preguntas de ejemplo</h2><p class="hint">Vuelve a cargar las preguntas de ejemplo de las 8 áreas. Tus módulos nuevos se mantienen.</p>
+  <button class="btn danger" id="reset">Restaurar ejemplos</button></div></main>`;
+ if(synth){
+  $('vs').onchange=e=>{prefs.voice=e.target.value;savePrefs()};
+  $('rt').oninput=e=>{prefs.rate=+e.target.value;$('rv').textContent=prefs.rate.toFixed(1);savePrefs()};
+  $('test').onclick=()=>{try{synth.cancel()}catch(e){}const was=prefs.muted;prefs.muted=false;speakOne('¡Hola! Soy Bubo. Así sonaré cuando explique las respuestas en clase.',1.1);prefs.muted=was};
+ }
+ $('reset').onclick=e=>{const b=e.currentTarget;if(!b.dataset.sure){b.dataset.sure=1;b.textContent='¿Seguro? Se reemplazan los módulos de ejemplo';return}
+  const ids=SEED.map(s=>s.id);mods=clone(SEED).concat(mods.filter(m=>!ids.includes(m.id)));save();b.textContent='Listo';};
+}
+
+document.addEventListener('keydown',e=>{
+ if(view.name!=='play'||/INPUT|TEXTAREA|SELECT/.test(e.target.tagName))return;
+ const k=e.key.toLowerCase(),i='abcd'.indexOf(k)>=0?'abcd'.indexOf(k):'1234'.indexOf(k);
+ if(i>=0){choose(i);e.preventDefault()}
+ else if(k==='enter'||k==='arrowright'){next();e.preventDefault()}
+ else if(k==='r'){if(play.seq.length)speakSeq(play.seq)}
+ else if(k==='m')toggleMute();
+ else if(k==='f')fullscreen();
+ else if(k==='escape')stopTalk();
+});
+render();
+}
+</script>
+</body>
+</html>
